@@ -6,7 +6,7 @@
   <p><b>A frictionless, hands-free experience for Instagram Reels.</b></p>
 
   <p>
-    <a <img src="https://img.shields.io/badge/version-2.1.0-2EA043?style=for-the-badge&logo=github" alt="Version"></a>
+    <a href="" <img src="https://img.shields.io/badge/version-2.1.0-2EA043?style=for-the-badge&logo=github" alt="Version"></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge" alt="License"></a>
     <img href="https://chromewebstore.google.com/detail/reels-flow-auto-scroll-fo/mlmllpiifbmfnopepamjhbdedfjajgcl" src="https://img.shields.io/badge/platform-Chrome%20%7C%20Edge%20%7C%20Brave-5A5A5A?style=for-the-badge&logo=googlechrome" alt="Platform">
   </p>
