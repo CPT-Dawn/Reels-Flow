@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>InstaReels Auto Scroller</title>
+        <link rel="stylesheet" href="popup.css" />
+        <script src="popup.js" defer></script>
+    </head>
+    <body>
+        <div class="popup-wrapper">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-content">
+                    <img
+                        src="../assets/header.png"
+                        alt="InstaReels Logo"
+                        class="logo"
+                    />
+                    <div class="header-text">
+                        <h1 class="title">Reels Flow</h1>
+                        <p class="subtitle">Watch Reels Hands-Free</p>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main class="settings-container">
+                <!-- Auto Scroll Card -->
+                <div class="setting-card">
+                    <div class="setting-info">
+                        <div class="setting-icon">
+                            <svg
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path
+                                    d="M12 4V20M12 20L8 16M12 20L16 16"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+                            </svg>
+                        </div>
+                        <div class="setting-text">
+                            <h2 class="setting-title">Auto-Scroll</h2>
+                            <p class="setting-description">
+                                Automatically scroll to the next Reel when one
+                                ends.
+                            </p>
+                        </div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="autoReelsToggle" />
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <!-- Show Toggle Card -->
+                <div class="setting-card">
+                    <div class="setting-info">
+                        <div class="setting-icon">
+                            <svg
+                                width="24"
+                                height="24"
+                                viewBox="0 0 16 16"
+                                fill="currentColor"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path
+                                    d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"
+                                />
+                                <path
+                                    d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"
+                                />
+                            </svg>
+                        </div>
+                        <div class="setting-text">
+                            <h2 class="setting-title">Show Toggle</h2>
+                            <p class="setting-description">
+                                Show the control button directly on the Reels
+                                page.
+                            </p>
+                        </div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="injectReelsButtonToggle" />
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </main>
+        </div>
+    </body>
+</html>
