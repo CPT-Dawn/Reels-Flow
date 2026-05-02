@@ -10,11 +10,7 @@
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge" alt="License"></a>
     <img href="https://chromewebstore.google.com/detail/reels-flow-auto-scroll-fo/mlmllpiifbmfnopepamjhbdedfjajgcl" src="https://img.shields.io/badge/platform-Chrome%20%7C%20Edge%20%7C%20Brave-5A5A5A?style=for-the-badge&logo=googlechrome" alt="Platform">
   </p>
-
-  <br/>
 </div>
-
-<br/>
 
 ## 🚀 Overview
 
@@ -49,9 +45,11 @@ Perfect for when you're cooking, working out, or simply want to sit back and rel
 
 ## 📦 Installation
 
-# Chrome web store: [Reels Flow - Auto Scroll for Instagram Reels](https://chromewebstore.google.com/detail/reels-flow-auto-scroll-fo/mlmllpiifbmfnopepamjhbdedfjajgcl)
+### Chrome web store:
 
-# Install as a developer:
+[Reels Flow - Auto Scroll for Instagram Reels](https://chromewebstore.google.com/detail/reels-flow-auto-scroll-fo/mlmllpiifbmfnopepamjhbdedfjajgcl)
+
+### Install as a developer:
 
 1. **Download:** Clone this repository or download the ZIP file and extract it.
 2. **Extensions Page:** Navigate to `chrome://extensions` in your browser.
