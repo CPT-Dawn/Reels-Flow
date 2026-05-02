@@ -1,27 +1,17 @@
 <div align="center">
-  <img src="assets/header.png" alt="Reels Flow Banner" width="100%" style="border-radius: 12px; margin-bottom: 20px;" />
-
-  <img src="assets/icon128.png" alt="Reels Flow Logo" width="100" height="100" />
+  <img src="store assets/icon.png" alt="Reels Flow Logo" width="100" height="100" />
 
   <h1>Reels Flow</h1>
   
   <p><b>A frictionless, hands-free experience for Instagram Reels.</b></p>
 
   <p>
-    <a href="https://github.com/CPTDawn/Reels-Flow/releases"><img src="https://img.shields.io/badge/version-2.0.0-2EA043?style=for-the-badge&logo=github" alt="Version"></a>
+    <a <img src="https://img.shields.io/badge/version-2.1.0-2EA043?style=for-the-badge&logo=github" alt="Version"></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge" alt="License"></a>
-    <img src="https://img.shields.io/badge/platform-Chrome%20%7C%20Edge%20%7C%20Brave-5A5A5A?style=for-the-badge&logo=googlechrome" alt="Platform">
+    <img href="https://chromewebstore.google.com/detail/reels-flow-auto-scroll-fo/mlmllpiifbmfnopepamjhbdedfjajgcl" src="https://img.shields.io/badge/platform-Chrome%20%7C%20Edge%20%7C%20Brave-5A5A5A?style=for-the-badge&logo=googlechrome" alt="Platform">
   </p>
 
   <br/>
-
-  <p>
-    <a href="#-overview">Overview</a> •
-    <a href="#-features">Features</a> •
-    <a href="#-installation">Installation</a> •
-    <a href="#-usage">Usage</a> •
-    <a href="#-privacy--security">Privacy</a>
-  </p>
 </div>
 
 <br/>
@@ -59,7 +49,9 @@ Perfect for when you're cooking, working out, or simply want to sit back and rel
 
 ## 📦 Installation
 
-Currently available for Developer Mode installation on all Chromium-based browsers.
+# Chrome web store: [Reels Flow - Auto Scroll for Instagram Reels](https://chromewebstore.google.com/detail/reels-flow-auto-scroll-fo/mlmllpiifbmfnopepamjhbdedfjajgcl)
+
+# Install as a developer:
 
 1. **Download:** Clone this repository or download the ZIP file and extract it.
 2. **Extensions Page:** Navigate to `chrome://extensions` in your browser.
