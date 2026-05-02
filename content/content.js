@@ -2,9 +2,10 @@ let autoScrollEnabled = false;
 let showToggleEnabled = false;
 let currentVideo = null;
 let videoObserver = null;
-let pageObserver = null;
+let observedVideos = new WeakSet();
+let discoveryInterval = null;
+let lastUrl = location.href;
 
-// ✅ Initialize the extension
 // ✅ Initialize the extension
 function init() {
   chrome.storage.sync.get(["autoReelsStart", "injectReelsButton"], (data) => {
@@ -19,8 +20,8 @@ chrome.storage.onChanged.addListener((changes) => {
   if (changes.autoReelsStart) {
     autoScrollEnabled = changes.autoReelsStart.newValue;
     updateToggleState(autoScrollEnabled);
-    if (autoScrollEnabled && currentVideo) {
-      setupVideoListener(currentVideo);
+    if (currentVideo) {
+      updateVideoLoopState(currentVideo);
     }
   }
   if (changes.injectReelsButton) {
@@ -37,44 +38,59 @@ function isReelsPage() {
 // ✅ Main Logic to Start/Stop App based on URL
 function checkPage() {
   if (isReelsPage()) {
-    if (showToggleEnabled) injectToggle(autoScrollEnabled);
-    setupObservers();
+    if (showToggleEnabled) {
+      injectToggle(autoScrollEnabled);
+    } else {
+      removeToggle();
+    }
+    setupApp();
   } else {
     cleanup();
   }
 }
 
-// ✅ Setup Observers
-function setupObservers() {
+// ✅ Setup Application
+function setupApp() {
   if (videoObserver) return; // Already set up
 
-  // IntersectionObserver to detect the active video
+  // IntersectionObserver to detect the active video (0.4 threshold is safer for tall videos on small screens)
   videoObserver = new IntersectionObserver(handleVideoIntersection, {
-    threshold: 0.7, // Video is considered "active" when 70% visible
+    threshold: 0.4,
   });
 
-  // MutationObserver to detect new videos loading (Infinite Scroll)
-  pageObserver = new MutationObserver((mutations) => {
-    // Check if we are still on reels page and toggle is missing but should be there
-    if (isReelsPage() && showToggleEnabled && !document.getElementById("myInjectedToggleWrapper")) {
-        injectToggle(autoScrollEnabled);
-    }
+  // Start a lightweight discovery interval instead of heavy MutationObservers
+  discoveryInterval = setInterval(discoverNewElements, 500);
 
-    mutations.forEach((mutation) => {
-      mutation.addedNodes.forEach((node) => {
-        if (node.nodeType === 1) {
-          const videos = node.querySelectorAll ? node.querySelectorAll("video") : [];
-          videos.forEach((video) => videoObserver.observe(video));
-          if (node.tagName === "VIDEO") videoObserver.observe(node);
-        }
-      });
+  // Initial observation
+  discoverNewElements();
+}
+
+// ✅ Lightweight polling for new videos and URL changes
+function discoverNewElements() {
+  // Check URL changes for SPA navigation
+  if (location.href !== lastUrl) {
+    lastUrl = location.href;
+    checkPage();
+    return; // checkPage might call cleanup
+  }
+
+  // Ensure toggle is present if enabled
+  if (isReelsPage() && showToggleEnabled && !document.getElementById("myInjectedToggleWrapper")) {
+    injectToggle(autoScrollEnabled);
+  }
+
+  // Find and observe new videos efficiently
+  if (videoObserver) {
+    document.querySelectorAll("video").forEach((video) => {
+      if (!observedVideos.has(video)) {
+        observedVideos.add(video);
+        videoObserver.observe(video);
+
+        // Prevent duplicate listeners by relying on WeakSet
+        video.addEventListener("ended", onVideoEnd);
+      }
     });
-  });
-
-  pageObserver.observe(document.body, { childList: true, subtree: true });
-
-  // Observe existing videos
-  document.querySelectorAll("video").forEach((video) => videoObserver.observe(video));
+  }
 }
 
 // ✅ Handle Video Intersection
@@ -82,36 +98,56 @@ function handleVideoIntersection(entries) {
   entries.forEach((entry) => {
     if (entry.isIntersecting) {
       currentVideo = entry.target;
-      if (autoScrollEnabled) {
-        setupVideoListener(currentVideo);
-      }
+      updateVideoLoopState(currentVideo);
     }
   });
 }
 
-// ✅ Setup Video End Listener
-function setupVideoListener(video) {
-  video.removeAttribute("loop");
-  video.removeEventListener("ended", onVideoEnd); // Prevent duplicates
-  video.addEventListener("ended", onVideoEnd);
+// ✅ Update loop state based on user settings
+function updateVideoLoopState(video) {
+  if (autoScrollEnabled) {
+    video.removeAttribute("loop");
+  } else {
+    video.setAttribute("loop", "");
+  }
 }
 
 // ✅ Handle Video End -> Scroll to Next
-function onVideoEnd() {
-  if (!autoScrollEnabled) return;
-  
+function onVideoEnd(e) {
+  if (!autoScrollEnabled || e.target !== currentVideo) return;
+
   const nextVideo = getNextVideo();
   if (nextVideo) {
     nextVideo.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 }
 
-// ✅ Find the next video in the DOM
+// ✅ Find the next video in the DOM geometrically
 function getNextVideo() {
   if (!currentVideo) return null;
+
   const videos = Array.from(document.querySelectorAll("video"));
-  const currentIndex = videos.indexOf(currentVideo);
-  return videos[currentIndex + 1] || null;
+  const currentRect = currentVideo.getBoundingClientRect();
+
+  let closestNextVideo = null;
+  let minDistance = Infinity;
+
+  for (const video of videos) {
+    if (video === currentVideo) continue;
+
+    const rect = video.getBoundingClientRect();
+
+    // Only consider videos that are visually below the current one
+    if (rect.top > currentRect.top + 10) {
+      const distance = rect.top - currentRect.top;
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestNextVideo = video;
+      }
+    }
+  }
+
+  return closestNextVideo;
 }
 
 // ✅ Cleanup function
@@ -121,34 +157,20 @@ function cleanup() {
     videoObserver.disconnect();
     videoObserver = null;
   }
-  if (pageObserver) {
-    pageObserver.disconnect();
-    pageObserver = null;
+  if (discoveryInterval) {
+    clearInterval(discoveryInterval);
+    discoveryInterval = null;
   }
+
+  // Clean up global listeners and restore native behavior
+  document.querySelectorAll("video").forEach(v => {
+      v.removeEventListener("ended", onVideoEnd);
+      v.setAttribute("loop", "");
+  });
+
+  observedVideos = new WeakSet();
   currentVideo = null;
 }
-
-// ✅ Listen for URL changes (SPA navigation)
-let lastUrl = location.href;
-// Use a more robust URL change detection
-const urlObserver = new MutationObserver(() => {
-  const url = location.href;
-  if (url !== lastUrl) {
-    lastUrl = url;
-    checkPage();
-  }
-});
-urlObserver.observe(document, { subtree: true, childList: true });
-
-// Also listen to popstate just in case
-window.addEventListener("popstate", () => {
-    const url = location.href;
-    if (url !== lastUrl) {
-        lastUrl = url;
-        checkPage();
-    }
-});
-
 
 // ✅ Inject Styles
 function injectStyles() {
@@ -161,7 +183,7 @@ function injectStyles() {
       --instagram-gradient-hover: linear-gradient(45deg, #FFC107, #E91E63, #9C27B0);
       --card-bg: linear-gradient(135deg, #1a1a1a 0%, #121212 100%);
     }
-    
+
     .injected-wrapper {
       position: fixed;
       top: 30px;
