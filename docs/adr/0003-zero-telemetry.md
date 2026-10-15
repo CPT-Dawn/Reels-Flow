@@ -1,0 +1,3 @@
+# Zero telemetry
+
+Reels Flow collects and transmits no data at all — no analytics, no error reporting, no usage counts. The Reels Watched counter and all settings stay in the browser. We gave up automatic breakage alerts (which would tell us quickly when Instagram changes its page) in exchange for a privacy promise users can rely on, a "collects no data" declaration on every store listing (including Firefox's mandatory data-collection declaration), and no extra disclosure review. We learn about breakage from the Goodbye Page, store reviews, and a "Report a problem" link that the viewer chooses to use. Reversing this would mean breaking a public promise and re-declaring on every store.
