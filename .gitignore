@@ -4,4 +4,5 @@ node_modules
 web-ext.config.ts
 *.log
 .vitest-attachments
+.vitest
 __screenshots__
