@@ -1,0 +1,22 @@
+{
+  "extensionName": {
+    "message": "Reels Flow: Auto Scroll for Instagram Reels",
+    "description": "Full extension name shown in the browser and on the stores."
+  },
+  "extensionShortName": {
+    "message": "Reels Flow",
+    "description": "Short extension name, also the toolbar button tooltip."
+  },
+  "extensionDescription": {
+    "message": "Watch Instagram Reels hands-free: Reels Flow moves to the next Reel when the current one finishes.",
+    "description": "Extension description shown in the browser and on the stores."
+  },
+  "popupTitle": {
+    "message": "Reels Flow",
+    "description": "Document title of the Popup."
+  },
+  "settingsPageTitle": {
+    "message": "Reels Flow Settings",
+    "description": "Document title of the Settings Page."
+  }
+}
