@@ -1,10 +1,8 @@
 import { browser } from 'wxt/browser';
 import { storage } from 'wxt/utils/storage';
 import { createSettingsStore, DEFAULT_SETTINGS } from '@/settings/settings';
-import { createWhatsNew } from '@/settings/whats-new';
-
-// Fixed paths on the Reels Flow website: see ADR 0002.
-const SITE = 'https://reelsflow.cptdawn.dev';
+import { createWhatsNew } from '@/lifecycle/whats-new';
+import { GOODBYE_PAGE, WELCOME_PAGE } from '@/site';
 
 /** What Reels Flow 2.x kept in synced storage, superseded by the v3 settings. */
 const LEGACY_KEYS = ['sync:autoReelsStart', 'sync:injectReelsButton'] as const;
@@ -15,16 +13,18 @@ const LEGACY_KEYS = ['sync:autoReelsStart', 'sync:injectReelsButton'] as const;
  * install event is never missed.
  */
 export function startLifecycle(): void {
-  void browser.runtime.setUninstallURL(`${SITE}/goodbye`);
+  void browser.runtime.setUninstallURL(GOODBYE_PAGE);
 
   browser.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
     if (reason === 'install') {
       await openWelcomePage();
-    } else if (reason === 'update' && majorVersion(previousVersion) < 3) {
-      await upgradeFromV2();
     } else if (reason === 'update') {
-      // Later updates never open a tab: the Popup shows a dot instead.
-      await createWhatsNew().markUnread();
+      if (majorVersion(previousVersion) < 3) {
+        await upgradeFromV2();
+      } else {
+        // Later updates never open a tab: the Popup shows a dot instead.
+        await createWhatsNew().markUnread();
+      }
     }
   });
 }
@@ -40,7 +40,7 @@ async function upgradeFromV2() {
 }
 
 async function openWelcomePage() {
-  await browser.tabs.create({ url: `${SITE}/welcome` });
+  await browser.tabs.create({ url: WELCOME_PAGE });
 }
 
 function majorVersion(version: string | undefined): number {

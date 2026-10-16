@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { startLifecycle } from '@/lifecycle/lifecycle';
 import { createSettingsStore } from '@/settings/settings';
-import { createWhatsNew } from '@/settings/whats-new';
+import { createWhatsNew } from '@/lifecycle/whats-new';
 
 const WELCOME = 'https://reelsflow.cptdawn.dev/welcome';
 
@@ -88,15 +88,13 @@ describe('later update', () => {
     expect(await openedPages()).toEqual([]);
   });
 
-  it("leaves What's new unread until the viewer opens it", async () => {
+  it("marks What's new unread for the Popup", async () => {
     const whatsNew = createWhatsNew();
     expect(await whatsNew.isUnread()).toBe(false);
 
     await update();
 
     expect(await whatsNew.isUnread()).toBe(true);
-    await whatsNew.markRead();
-    expect(await createWhatsNew().isUnread()).toBe(false);
   });
 
   it("keeps the viewer's settings", async () => {

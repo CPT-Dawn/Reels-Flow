@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import { mountPopup, type PopupOptions } from '@/popup/popup';
 import type { SettingsStore } from '@/settings/settings';
-import type { WhatsNew } from '@/settings/whats-new';
+import type { WhatsNew } from '@/lifecycle/whats-new';
 import { createTestSettingsStore } from './support/settings';
 
 // The real English message file, which Vite serves from public/.

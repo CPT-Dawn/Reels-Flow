@@ -1,6 +1,6 @@
 import { mountPopup } from '@/popup/popup';
 import { createSettingsStore } from '@/settings/settings';
-import { createWhatsNew } from '@/settings/whats-new';
+import { createWhatsNew } from '@/lifecycle/whats-new';
 
 document.title = browser.i18n.getMessage('popupTitle');
 

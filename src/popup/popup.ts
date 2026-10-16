@@ -1,5 +1,6 @@
 import type { Settings, SettingsStore } from '@/settings/settings';
-import type { WhatsNew } from '@/settings/whats-new';
+import type { WhatsNew } from '@/lifecycle/whats-new';
+import { REPORT_PAGE, SUPPORT_PAGE, WELCOME_PAGE } from '@/site';
 import './popup.css';
 
 /** The keys in the message files the Popup shows. */
@@ -25,9 +26,6 @@ export type PopupOptions = {
   /** Whether an update brought news the viewer hasn't opened yet. */
   whatsNew: WhatsNew;
 };
-
-// Fixed paths on the Reels Flow website: see ADR 0002.
-const SITE = 'https://reelsflow.cptdawn.dev';
 
 type Switch = {
   key: 'autoScroll' | 'reelControlShown';
@@ -66,10 +64,10 @@ export function mountPopup(
   settingsButton.setAttribute('aria-label', message('popupSettings'));
   settingsButton.addEventListener('click', () => openSettingsPage());
 
-  // The Welcome Page carries the news (ADR 0002 keeps links to fixed paths).
+  // The Welcome Page carries the news.
   const whatsNewLink = opensInNewTab(
     element('a', 'rf-whats-new', message('popupWhatsNew')),
-    `${SITE}/welcome`,
+    WELCOME_PAGE,
   );
   const unreadDot = element('span', 'rf-unread-dot');
   unreadDot.setAttribute('role', 'img');
@@ -107,7 +105,7 @@ export function mountPopup(
   });
   const controls = element('section', 'rf-controls', ...inputs.map(({ row }) => row));
 
-  const reportUrl = new URL('/report', SITE);
+  const reportUrl = new URL(REPORT_PAGE);
   reportUrl.searchParams.set('version', version);
   reportUrl.searchParams.set('browser', browser);
   const heart = element('span', '', '♡ ');
@@ -116,7 +114,7 @@ export function mountPopup(
     'footer',
     'rf-footer',
     opensInNewTab(element('a', 'rf-report', message('popupReportProblem')), reportUrl.href),
-    opensInNewTab(element('a', 'rf-support', heart, message('popupSupport')), `${SITE}/support`),
+    opensInNewTab(element('a', 'rf-support', heart, message('popupSupport')), SUPPORT_PAGE),
   );
 
   const popup = element('main', 'rf-popup', header, controls, footer);
