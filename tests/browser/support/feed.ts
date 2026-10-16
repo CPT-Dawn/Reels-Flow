@@ -1,8 +1,10 @@
 import { describe, onTestFinished } from 'vitest';
 import { mountEngine } from '@/engine/engine';
+import type { SessionStore } from '@/settings/session';
 import type { SettingsStore } from '@/settings/settings';
 import { createTestClock, type TestClock } from './clock';
 import { getMessage } from './messages';
+import { createTestSessionStore } from './session';
 import { createTestSettingsStore } from './settings';
 
 type FixtureInfo = {
@@ -53,6 +55,7 @@ export type ReelsFeed = {
   /** Every Reel's video, top to bottom, including Reels loaded since. */
   readonly videos: HTMLVideoElement[];
   settings: SettingsStore;
+  session: SessionStore;
   clock: TestClock;
   /**
    * What the viewer has seen so far, in order: `reel <n> started over`
@@ -80,6 +83,12 @@ export type ReelsFeed = {
    * Returns a function that closes it again.
    */
   openMenu(button: 'Share' | 'More'): () => void;
+  /**
+   * Stands in for the viewer switching to another tab, which a test page
+   * can't do: the Reels Feed is told it is in the background. Returns a
+   * function that switches back.
+   */
+  switchToAnotherTab(): () => void;
   /** Tears the engine and the page down. Also runs when the test ends. */
   unmount(): void;
 };
@@ -93,11 +102,13 @@ export async function mountReelsFeed(
   fixture: Fixture,
   {
     settings = createTestSettingsStore(),
+    session = createTestSessionStore(),
     clock = createTestClock(),
     path = fixture.path,
     viewport = fixture.viewport,
   }: {
     settings?: SettingsStore;
+    session?: SessionStore;
     clock?: TestClock;
     /** Where on Instagram the page is when the engine starts. */
     path?: string;
@@ -135,7 +146,7 @@ export async function mountReelsFeed(
   await nextFrames(window, 2);
   const player = playLikeInstagram(window, videos());
   const recording = recordTimeline(window, videos);
-  const unmountEngine = mountEngine(window.document, { settings, getMessage, clock });
+  const unmountEngine = mountEngine(window.document, { settings, session, getMessage, clock });
 
   let mounted = true;
   const unmount = () => {
@@ -155,6 +166,7 @@ export async function mountReelsFeed(
       return videos();
     },
     settings,
+    session,
     clock,
     timeline: recording.timeline,
     navigate(path) {
@@ -183,6 +195,19 @@ export async function mountReelsFeed(
       menu.style.cssText = 'position: fixed; top: 40%; right: 10%; width: 300px; height: 200px';
       window.document.body.append(menu);
       return () => menu.remove();
+    },
+    switchToAnotherTab() {
+      const { document } = window;
+      const background = { visibilityState: 'hidden', hidden: true };
+      for (const [name, value] of Object.entries(background)) {
+        Object.defineProperty(document, name, { value, configurable: true });
+      }
+      document.dispatchEvent(new window.Event('visibilitychange'));
+      return () => {
+        // Uncovers the document's own, which say it is in front.
+        for (const name of Object.keys(background)) delete (document as unknown as Record<string, unknown>)[name];
+        document.dispatchEvent(new window.Event('visibilitychange'));
+      };
     },
     unmount,
   };

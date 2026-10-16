@@ -1,4 +1,5 @@
 import { mountEngine } from '@/engine/engine';
+import { createSessionStore } from '@/settings/session';
 import { createSettingsStore } from '@/settings/settings';
 
 export default defineContentScript({
@@ -9,6 +10,7 @@ export default defineContentScript({
     ctx.onInvalidated(
       mountEngine(document, {
         settings: createSettingsStore(),
+        session: createSessionStore(),
         getMessage: (name, substitution) => browser.i18n.getMessage(name, substitution),
       }),
     );

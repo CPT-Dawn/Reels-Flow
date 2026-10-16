@@ -2,12 +2,17 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import { mountPopup, type PopupOptions } from '@/popup/popup';
 import type { SettingsStore } from '@/settings/settings';
+import { createTestSessionStore } from './support/session';
 import { createTestSettingsStore } from './support/settings';
 
 // The real English message file, which Vite serves from public/.
 const messages: Record<string, { message: string }> = await (
   await fetch('/_locales/en/messages.json')
 ).json();
+
+// When the Popup opens, in ms since the epoch.
+const NOW = Date.UTC(2026, 9, 17, 12);
+const MINUTE = 60_000;
 
 let unmount: (() => void) | undefined;
 
@@ -20,6 +25,8 @@ afterEach(() => {
 function openPopup(options: Partial<PopupOptions> & { settings: SettingsStore }) {
   unmount = mountPopup(document, {
     message: (key) => messages[key]!.message,
+    session: createTestSessionStore(),
+    now: () => NOW,
     version: '3.0.0',
     browser: 'chrome',
     openSettingsPage: () => {},
@@ -108,5 +115,32 @@ describe('Settings Page', () => {
     await page.getByRole('button', { name: 'Settings' }).click();
 
     expect(opened).toBe(1);
+  });
+});
+
+describe('Reels Watched', () => {
+  it('shows how many Reels the viewer has watched this Session', async () => {
+    const session = createTestSessionStore({ reelsWatched: 12, lastSeenAt: NOW - MINUTE });
+    openPopup({ settings: createTestSettingsStore(), session });
+
+    await expect.element(page.getByRole('status', { name: 'Reels watched this session' })).toHaveTextContent('12');
+  });
+
+  it('counts on while the viewer watches in another tab', async () => {
+    const session = createTestSessionStore({ reelsWatched: 12, lastSeenAt: NOW });
+    openPopup({ settings: createTestSettingsStore(), session });
+    const reelsWatched = page.getByRole('status', { name: 'Reels watched this session' });
+    await expect.element(reelsWatched).toHaveTextContent('12');
+
+    await session.update((stored) => ({ ...stored, reelsWatched: 13 }));
+
+    await expect.element(reelsWatched).toHaveTextContent('13');
+  });
+
+  it('shows none once the viewer has been away from the Reels Feed for 30 minutes', async () => {
+    const session = createTestSessionStore({ reelsWatched: 12, lastSeenAt: NOW - 30 * MINUTE });
+    openPopup({ settings: createTestSettingsStore(), session });
+
+    await expect.element(page.getByRole('status', { name: 'Reels watched this session' })).toHaveTextContent('0');
   });
 });
