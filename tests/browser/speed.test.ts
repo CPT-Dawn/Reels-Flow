@@ -80,6 +80,16 @@ describeEachFixture((fixture) => {
     await expect.poll(() => badge(reelsFeed)).toBe('1x');
   });
 
+  it('shows the badge when Speed is switched on at a Preferred Speed of 1x', async () => {
+    const settings = createTestSettingsStore({ autoScroll: false, preferredSpeed: 1 });
+    const reelsFeed = await mountReelsFeed(fixture, { settings });
+    await aMomentLater();
+
+    await settings.set({ speedOn: true });
+
+    await expect.poll(() => badge(reelsFeed)).toBe('1x');
+  });
+
   it.each([0.5, 3])('Advances exactly at the end of each Reel at %sx', async (speed) => {
     const reelsFeed = await mountReelsFeed(fixture, {
       settings: createTestSettingsStore({ speedOn: true, preferredSpeed: speed }),

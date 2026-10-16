@@ -39,15 +39,13 @@ export type Speed = {
 export function watchSpeed(document: Document, clock: Clock): Speed {
   /** The rate Reels must play at, or undefined while Speed is off. */
   let rate: number | undefined;
-  /** The rate last shown, so the badge appears only on a change. */
-  let shownRate: number | undefined;
+  /** The Speed last applied, so the badge appears only on a change; undefined before the first. */
+  let shown: { rate: number | undefined } | undefined;
   let badge: HTMLElement | undefined;
   let badgeTimer: number | undefined;
 
   const applyTo = (video: HTMLVideoElement) => {
-    if (rate === undefined) return;
-    video.defaultPlaybackRate = rate;
-    if (video.playbackRate !== rate) video.playbackRate = rate;
+    if (rate !== undefined) setRate(video, rate);
   };
 
   const onVideoEvent = (event: Event) => {
@@ -55,8 +53,8 @@ export function watchSpeed(document: Document, clock: Clock): Speed {
     if (video.tagName === 'VIDEO') applyTo(video);
   };
   // Media events don't bubble, so catch them on their way down to the video.
-  const types = ['loadstart', 'loadedmetadata', 'play', 'playing', 'ratechange'];
-  for (const type of types) document.addEventListener(type, onVideoEvent, true);
+  const MEDIA_EVENTS = ['loadstart', 'loadedmetadata', 'play', 'playing', 'ratechange'];
+  for (const type of MEDIA_EVENTS) document.addEventListener(type, onVideoEvent, true);
 
   const hideBadge = () => {
     if (badgeTimer !== undefined) clock.clearTimeout(badgeTimer);
@@ -88,25 +86,26 @@ export function watchSpeed(document: Document, clock: Clock): Speed {
 
   return {
     update({ speedOn, preferredSpeed }) {
-      const next = speedOn ? preferredSpeed : 1;
+      const next = speedOn ? preferredSpeed : undefined;
+      if (shown && shown.rate === next) return;
       const wasOn = rate !== undefined;
-      rate = speedOn ? preferredSpeed : undefined;
-      if (shownRate === next) return;
+      rate = next;
       const videos = document.querySelectorAll('video');
       if (rate !== undefined) videos.forEach(applyTo);
-      else if (wasOn) {
-        videos.forEach((video) => {
-          video.defaultPlaybackRate = 1;
-          video.playbackRate = 1;
-        });
-      }
+      else if (wasOn) videos.forEach((video) => setRate(video, 1));
       // The first settings read sets the speed without announcing it.
-      if (shownRate !== undefined) showBadge(`${next}x`);
-      shownRate = next;
+      if (shown) showBadge(`${next ?? 1}x`);
+      shown = { rate: next };
     },
     stop() {
-      for (const type of types) document.removeEventListener(type, onVideoEvent, true);
+      for (const type of MEDIA_EVENTS) document.removeEventListener(type, onVideoEvent, true);
       hideBadge();
     },
   };
+}
+
+/** Plays `video` at `rate`, now and whenever it next starts, touching its rate only to change it. */
+function setRate(video: HTMLVideoElement, rate: number) {
+  video.defaultPlaybackRate = rate;
+  if (video.playbackRate !== rate) video.playbackRate = rate;
 }
