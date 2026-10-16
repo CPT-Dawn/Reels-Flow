@@ -38,5 +38,43 @@
   "popupSupport": {
     "message": "Support Reels Flow",
     "description": "Popup footer link to the Support Page, where a viewer can choose to donate. Shown after a heart."
+  },
+  "settingsShortcuts": {
+    "message": "Shortcuts",
+    "description": "Settings Page heading over the list of Shortcuts, single keys that act on the Reels Feed."
+  },
+  "settingsShortcutsHint": {
+    "message": "Single keys that work on Instagram Reels, except while you're typing. Click a key to change it.",
+    "description": "Settings Page text under the Shortcuts heading."
+  },
+  "shortcutToggleAutoScroll": {
+    "message": "Auto-Scroll on/off",
+    "description": "Settings Page name of the Shortcut that switches Auto-Scroll on or off."
+  },
+  "shortcutNextReel": {
+    "message": "Next Reel",
+    "description": "Settings Page name of the Shortcut that goes to the next Reel."
+  },
+  "shortcutPreviousReel": {
+    "message": "Previous Reel",
+    "description": "Settings Page name of the Shortcut that goes back to the previous Reel."
+  },
+  "settingsPressKey": {
+    "message": "Press a key…",
+    "description": "Shown on a Shortcut's key on the Settings Page while it waits for the viewer to press its new key."
+  },
+  "settingsKeyTaken": {
+    "message": "$KEY$ is already a Shortcut.",
+    "description": "Settings Page notice when the viewer presses a key that another Shortcut already has; the key is not taken.",
+    "placeholders": {
+      "key": {
+        "content": "$1",
+        "example": "A"
+      }
+    }
+  },
+  "settingsResetShortcuts": {
+    "message": "Reset Shortcuts",
+    "description": "Settings Page button that puts every Shortcut back to its default key."
   }
 }

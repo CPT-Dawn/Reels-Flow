@@ -1,7 +1,8 @@
-import type { SettingsStore } from '@/settings/settings';
+import type { Settings, SettingsStore } from '@/settings/settings';
 import { watchReelEnds } from './reel-end';
-import { advance, currentReelVideo } from './reels-feed';
+import { advance, currentReelVideo, goToReelBeside } from './reels-feed';
 import { whileOnReelsFeed } from './route';
+import { watchShortcuts } from './shortcuts';
 
 /** Time as the engine sees it, so tests can move it forward by hand. */
 export interface Clock {
@@ -26,22 +27,40 @@ export function mountEngine(
   document: Document,
   { settings, clock = windowClock(document.defaultView!) }: EngineOptions,
 ): () => void {
-  // Off until the settings arrive, so nothing moves on a guess.
-  let autoScroll = false;
+  // Unknown until the settings arrive, so nothing moves on a guess.
+  let current: Settings | undefined;
   let changedSinceRead = false;
-  const unwatchSettings = settings.watch((current) => {
+  const unwatchSettings = settings.watch((changed) => {
     changedSinceRead = true;
-    autoScroll = current.autoScroll;
+    current = changed;
   });
-  void settings.get().then((current) => {
-    if (!changedSinceRead) autoScroll = current.autoScroll;
+  void settings.get().then((read) => {
+    if (!changedSinceRead) current = read;
   });
 
-  const unwatchRoute = whileOnReelsFeed(document.defaultView!, clock, () =>
-    watchReelEnds(document, (video) => {
-      if (autoScroll && video === currentReelVideo(document)) advance(video);
-    }),
-  );
+  const toggleAutoScroll = () => {
+    if (current) void settings.set({ autoScroll: !current.autoScroll });
+  };
+
+  const goToReel = (side: 'below' | 'above') => {
+    const video = currentReelVideo(document);
+    if (video) goToReelBeside(video, side);
+  };
+
+  const unwatchRoute = whileOnReelsFeed(document.defaultView!, clock, () => {
+    const unwatchEnds = watchReelEnds(document, (video) => {
+      if (current?.autoScroll && video === currentReelVideo(document)) advance(video);
+    });
+    const unwatchShortcuts = watchShortcuts(document, () => current?.shortcuts, {
+      toggleAutoScroll,
+      nextReel: () => goToReel('below'),
+      previousReel: () => goToReel('above'),
+    });
+    return () => {
+      unwatchEnds();
+      unwatchShortcuts();
+    };
+  });
 
   return () => {
     unwatchRoute();
