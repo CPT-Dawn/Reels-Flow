@@ -39,6 +39,24 @@
     "message": "Support Reels Flow",
     "description": "Popup footer link to the Support Page, where a viewer can choose to donate. Shown after a heart."
   },
+  "reelControlName": {
+    "message": "Auto-Scroll",
+    "description": "What screen readers call the Reel Control, the Auto-Scroll on/off button beside each Reel."
+  },
+  "reelControlLabel": {
+    "message": "Auto",
+    "description": "Short label under the Reel Control's icon, like the counts under Instagram's own buttons."
+  },
+  "reelControlTitle": {
+    "message": "Auto-Scroll · $KEY$",
+    "description": "Shown on hovering the Reel Control: what it does, and the Shortcut key that does the same.",
+    "placeholders": {
+      "key": {
+        "content": "$1",
+        "example": "A"
+      }
+    }
+  },
   "settingsShortcuts": {
     "message": "Shortcuts",
     "description": "Settings Page heading over the list of Shortcuts, single keys that act on the Reels Feed."

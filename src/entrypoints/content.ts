@@ -6,6 +6,11 @@ export default defineContentScript({
   // without a page load, so the engine must already be there to notice.
   matches: ['https://www.instagram.com/*'],
   main(ctx) {
-    ctx.onInvalidated(mountEngine(document, { settings: createSettingsStore() }));
+    ctx.onInvalidated(
+      mountEngine(document, {
+        settings: createSettingsStore(),
+        getMessage: (name, substitution) => browser.i18n.getMessage(name, substitution),
+      }),
+    );
   },
 });

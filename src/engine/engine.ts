@@ -1,4 +1,5 @@
 import type { Settings, SettingsStore } from '@/settings/settings';
+import { placeReelControls, type ReelControls } from './reel-control';
 import { watchReelEnds } from './reel-end';
 import { advance, currentReelVideo, goToReelBeside } from './reels-feed';
 import { whileOnReelsFeed } from './route';
@@ -11,8 +12,16 @@ export interface Clock {
   clearTimeout(id: number): void;
 }
 
+/** The browser's localised strings the engine shows on the Reels Feed (public/_locales). */
+export type GetMessage = (
+  name: 'reelControlName' | 'reelControlLabel' | 'reelControlTitle',
+  substitution?: string,
+) => string;
+
 export type EngineOptions = {
   settings: SettingsStore;
+  /** The browser's localised strings, `browser.i18n.getMessage` in the extension. */
+  getMessage: GetMessage;
   clock?: Clock;
 };
 
@@ -25,17 +34,22 @@ export type EngineOptions = {
  */
 export function mountEngine(
   document: Document,
-  { settings, clock = windowClock(document.defaultView!) }: EngineOptions,
+  { settings, getMessage, clock = windowClock(document.defaultView!) }: EngineOptions,
 ): () => void {
   // Unknown until the settings arrive, so nothing moves on a guess.
   let current: Settings | undefined;
+  let reelControls: ReelControls | undefined;
+  const apply = (next: Settings) => {
+    current = next;
+    reelControls?.update(next);
+  };
   let changedSinceRead = false;
   const unwatchSettings = settings.watch((changed) => {
     changedSinceRead = true;
-    current = changed;
+    apply(changed);
   });
   void settings.get().then((read) => {
-    if (!changedSinceRead) current = read;
+    if (!changedSinceRead) apply(read);
   });
 
   const toggleAutoScroll = () => {
@@ -56,9 +70,13 @@ export function mountEngine(
       nextReel: () => goToReel('below'),
       previousReel: () => goToReel('above'),
     });
+    reelControls = placeReelControls(document, { getMessage, onClick: toggleAutoScroll });
+    if (current) reelControls.update(current);
     return () => {
       unwatchEnds();
       unwatchShortcuts();
+      reelControls!.remove();
+      reelControls = undefined;
     };
   });
 

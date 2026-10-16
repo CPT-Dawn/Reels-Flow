@@ -2,6 +2,7 @@ import { describe, onTestFinished } from 'vitest';
 import { mountEngine } from '@/engine/engine';
 import type { SettingsStore } from '@/settings/settings';
 import { createTestClock, type TestClock } from './clock';
+import { getMessage } from './messages';
 import { createTestSettingsStore } from './settings';
 
 type FixtureInfo = {
@@ -118,7 +119,7 @@ export async function mountReelsFeed(
   await nextFrames(window, 2);
   const player = playLikeInstagram(window, videos());
   const recording = recordTimeline(window, videos);
-  const unmountEngine = mountEngine(window.document, { settings, clock });
+  const unmountEngine = mountEngine(window.document, { settings, getMessage, clock });
 
   let mounted = true;
   const unmount = () => {

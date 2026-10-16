@@ -54,6 +54,21 @@ export function goToReelBeside(video: HTMLVideoElement, side: 'below' | 'above')
   });
 }
 
+/**
+ * Every Reel in the Reels Feed, whether or not Instagram has loaded its video
+ * yet. Where the Reels Feed can't be found, or what scrolls holds more than one
+ * video to a child, each Reel's video stands in for its Reel.
+ */
+export function reelsInFeed(document: Document): Element[] {
+  const video = document.querySelector('video');
+  const reelsFeed = video && scrollingAncestor(video);
+  if (!reelsFeed) return [...document.querySelectorAll('video')];
+  return [...reelsFeed.children].flatMap((reel) => {
+    const videos = reel.querySelectorAll('video');
+    return videos.length > 1 ? [...videos] : [reel];
+  });
+}
+
 function scrollingAncestor(element: Element) {
   const window = element.ownerDocument.defaultView!;
   for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
