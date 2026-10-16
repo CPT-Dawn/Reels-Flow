@@ -23,6 +23,10 @@
     "message": "Auto-Scroll",
     "description": "Popup switch that turns Auto-Scroll on or off."
   },
+  "popupSpeed": {
+    "message": "Speed",
+    "description": "Popup switch that turns Speed on or off: while on, every Reel plays at the Preferred Speed chosen on the Settings Page."
+  },
   "popupReelControl": {
     "message": "Button on Reels",
     "description": "Popup switch that shows or hides the Reel Control, Reels Flow's Auto-Scroll button beside each Reel."
@@ -69,6 +73,10 @@
     "message": "Auto-Scroll on/off",
     "description": "Settings Page name of the Shortcut that switches Auto-Scroll on or off."
   },
+  "shortcutToggleSpeed": {
+    "message": "Speed on/off",
+    "description": "Settings Page name of the Shortcut that switches Speed on or off."
+  },
   "shortcutNextReel": {
     "message": "Next Reel",
     "description": "Settings Page name of the Shortcut that goes to the next Reel."
@@ -94,5 +102,17 @@
   "settingsResetShortcuts": {
     "message": "Reset Shortcuts",
     "description": "Settings Page button that puts every Shortcut back to its default key."
+  },
+  "settingsSpeed": {
+    "message": "Speed",
+    "description": "Settings Page heading over the Preferred Speed setting."
+  },
+  "settingsPreferredSpeed": {
+    "message": "Preferred Speed",
+    "description": "Settings Page label of the choice of speed every Reel plays at while Speed is on."
+  },
+  "settingsPreferredSpeedHint": {
+    "message": "How fast Reels play while Speed is on. Switch Speed on or off from the toolbar button or with its Shortcut.",
+    "description": "Settings Page text under the Speed heading."
   }
 }

@@ -128,3 +128,30 @@ describe('Shortcuts', () => {
     expect((await settings.get()).shortcuts).toEqual(DEFAULT_SETTINGS.shortcuts);
   });
 });
+
+describe('Preferred Speed', () => {
+  it('offers 0.5x to 3x in steps of 0.25, at 1.5x to begin with', async () => {
+    openSettingsPage();
+    const preferredSpeed = page.getByRole('combobox', { name: 'Preferred Speed' });
+
+    await expect.element(preferredSpeed).toHaveValue('1.5');
+    const options = [...(preferredSpeed.element() as HTMLSelectElement).options].map((option) => option.text);
+    expect(options).toEqual(['0.5x', '0.75x', '1x', '1.25x', '1.5x', '1.75x', '2x', '2.25x', '2.5x', '2.75x', '3x']);
+  });
+
+  it('keeps the Preferred Speed the viewer picks', async () => {
+    const settings = openSettingsPage();
+    const preferredSpeed = page.getByRole('combobox', { name: 'Preferred Speed' });
+    await expect.element(preferredSpeed).toBeEnabled();
+
+    await preferredSpeed.selectOptions('2.25x');
+
+    await expect.poll(async () => (await settings.get()).preferredSpeed).toBe(2.25);
+  });
+
+  it('lists the Speed Shortcut, S by default', async () => {
+    openSettingsPage();
+
+    await expect.element(shortcut('Speed on/off')).toHaveTextContent('S');
+  });
+});

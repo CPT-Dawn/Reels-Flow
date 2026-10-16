@@ -5,6 +5,7 @@ import './popup.css';
 export type PopupMessage =
   | 'extensionShortName'
   | 'popupAutoScroll'
+  | 'popupSpeed'
   | 'popupReelControl'
   | 'popupSettings'
   | 'popupReportProblem'
@@ -25,12 +26,13 @@ export type PopupOptions = {
 const SITE = 'https://reelsflow.cptdawn.dev';
 
 type Switch = {
-  key: 'autoScroll' | 'reelControlShown';
+  key: 'autoScroll' | 'speedOn' | 'reelControlShown';
   label: PopupMessage;
 };
 
 const SWITCHES: Switch[] = [
   { key: 'autoScroll', label: 'popupAutoScroll' },
+  { key: 'speedOn', label: 'popupSpeed' },
   { key: 'reelControlShown', label: 'popupReelControl' },
 ];
 

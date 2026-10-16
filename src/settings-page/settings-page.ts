@@ -13,11 +13,15 @@ export type SettingsPageMessage =
   | 'settingsShortcuts'
   | 'settingsShortcutsHint'
   | 'shortcutToggleAutoScroll'
+  | 'shortcutToggleSpeed'
   | 'shortcutNextReel'
   | 'shortcutPreviousReel'
   | 'settingsPressKey'
   | 'settingsKeyTaken'
-  | 'settingsResetShortcuts';
+  | 'settingsResetShortcuts'
+  | 'settingsSpeed'
+  | 'settingsPreferredSpeed'
+  | 'settingsPreferredSpeedHint';
 
 export type SettingsPageOptions = {
   settings: SettingsStore;
@@ -31,9 +35,13 @@ export type SettingsPageOptions = {
 /** The Shortcuts the Settings Page lists, in order. */
 const SHORTCUTS: { action: ShortcutAction; label: SettingsPageMessage }[] = [
   { action: 'toggleAutoScroll', label: 'shortcutToggleAutoScroll' },
+  { action: 'toggleSpeed', label: 'shortcutToggleSpeed' },
   { action: 'nextReel', label: 'shortcutNextReel' },
   { action: 'previousReel', label: 'shortcutPreviousReel' },
 ];
+
+/** The Preferred Speeds the viewer can pick: 0.5x to 3x in steps of 0.25. */
+const PREFERRED_SPEEDS = Array.from({ length: 11 }, (_, i) => 0.5 + i * 0.25);
 
 /**
  * Builds the Settings Page into `document.body` and returns its teardown.
@@ -115,6 +123,24 @@ export function mountSettingsPage(
     void settings.set({ shortcuts: { ...DEFAULT_SETTINGS.shortcuts } });
   });
 
+  const speedSelect = element(
+    'select',
+    'rf-speed-select',
+    ...PREFERRED_SPEEDS.map((speed) => {
+      const option = element('option', '', `${speed}x`);
+      option.value = String(speed);
+      return option;
+    }),
+  );
+  speedSelect.id = 'rf-preferred-speed';
+  // Disabled until the settings arrive, so nothing shows a guess.
+  speedSelect.disabled = true;
+  speedSelect.addEventListener('change', () => {
+    void settings.set({ preferredSpeed: Number(speedSelect.value) });
+  });
+  const speedLabel = element('label', 'rf-speed-label', message('settingsPreferredSpeed'));
+  speedLabel.htmlFor = speedSelect.id;
+
   const page = element(
     'main',
     'rf-settings-page',
@@ -127,6 +153,13 @@ export function mountSettingsPage(
       element('ul', 'rf-shortcuts', ...rows.map(({ row }) => row)),
       status,
       reset,
+    ),
+    element(
+      'section',
+      'rf-section',
+      element('h2', 'rf-section-title', message('settingsSpeed')),
+      element('p', 'rf-section-hint', message('settingsPreferredSpeedHint')),
+      element('div', 'rf-speed', speedLabel, speedSelect),
     ),
   );
   document.body.append(page);
@@ -141,6 +174,8 @@ export function mountSettingsPage(
       key.classList.toggle('rf-capturing', capturing === action);
       key.disabled = false;
     }
+    speedSelect.value = String(settings.preferredSpeed);
+    speedSelect.disabled = false;
   };
 
   let changedSinceRead = false;
