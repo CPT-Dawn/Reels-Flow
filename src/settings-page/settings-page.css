@@ -130,3 +130,27 @@ body {
   outline: 2px solid var(--ig-focus-ring);
   outline-offset: 2px;
 }
+
+.rf-section + .rf-section {
+  margin-top: 32px;
+}
+
+.rf-speed {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  border: 1px solid var(--ig-separator);
+  border-radius: 12px;
+}
+
+.rf-speed-select {
+  padding: 6px 12px;
+  border: 1px solid var(--ig-separator);
+  border-radius: 8px;
+  background: var(--ig-secondary-background);
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+}

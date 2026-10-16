@@ -5,6 +5,7 @@ import { watchReelEnds } from './reel-end';
 import { advance, currentReelVideo, goToReelBeside } from './reels-feed';
 import { whileOnReelsFeed } from './route';
 import { watchShortcuts } from './shortcuts';
+import { watchSpeed, type Speed } from './speed';
 
 /** Time as the engine sees it, so tests can move it forward by hand. */
 export interface Clock {
@@ -40,9 +41,11 @@ export function mountEngine(
   // Unknown until the settings arrive, so nothing moves on a guess.
   let current: Settings | undefined;
   let reelControls: ReelControls | undefined;
+  let speed: Speed | undefined;
   const apply = (next: Settings) => {
     current = next;
     reelControls?.update(next);
+    speed?.update(next);
   };
   let changedSinceRead = false;
   const unwatchSettings = settings.watch((changed) => {
@@ -55,6 +58,10 @@ export function mountEngine(
 
   const toggleAutoScroll = () => {
     if (current) void settings.set({ autoScroll: !current.autoScroll });
+  };
+
+  const toggleSpeed = () => {
+    if (current) void settings.set({ speedOn: !current.speedOn });
   };
 
   const goToReel = (side: 'below' | 'above') => {
@@ -71,12 +78,19 @@ export function mountEngine(
     });
     const unwatchShortcuts = watchShortcuts(document, () => current?.shortcuts, {
       toggleAutoScroll,
+      toggleSpeed,
       nextReel: () => goToReel('below'),
       previousReel: () => goToReel('above'),
     });
     reelControls = placeReelControls(document, { getMessage, onClick: toggleAutoScroll });
-    if (current) reelControls.update(current);
+    speed = watchSpeed(document, clock);
+    if (current) {
+      reelControls.update(current);
+      speed.update(current);
+    }
     return () => {
+      speed!.stop();
+      speed = undefined;
       unwatchEnds();
       holds.stop();
       unwatchShortcuts();

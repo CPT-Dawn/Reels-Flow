@@ -110,3 +110,18 @@ describe('Settings Page', () => {
     expect(opened).toBe(1);
   });
 });
+
+describe('Speed switch', () => {
+  it('switches Speed on everywhere, and follows it being switched off elsewhere', async () => {
+    const settings = createTestSettingsStore({ speedOn: false });
+    openPopup({ settings });
+    const speed = page.getByRole('switch', { name: 'Speed' });
+    await expect.element(speed).not.toBeChecked();
+
+    await speed.click();
+    await expect.poll(async () => (await settings.get()).speedOn).toBe(true);
+
+    await settings.set({ speedOn: false });
+    await expect.element(speed).not.toBeChecked();
+  });
+});
