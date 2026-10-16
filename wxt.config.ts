@@ -18,12 +18,12 @@ export default defineConfig({
       browser_specific_settings: {
         gecko: {
           id: 'reels-flow@cptdawn.dev',
-          // 140 is the first Firefox desktop release that understands
-          // data_collection_permissions. Zero telemetry: see ADR 0003.
-          // `web-ext lint` warns that Android only gained it in 142; ignore
-          // that. Adding `gecko_android` to silence it would make AMO list
-          // Reels Flow for Android, which is out of scope.
-          strict_min_version: '140.0',
+          // data_collection_permissions arrived in Firefox desktop 140 but
+          // Android 142, and `web-ext lint` checks the desktop minimum against
+          // both. 142 keeps the lint clean without a `gecko_android` key, which
+          // would make AMO list Reels Flow for Android (out of scope).
+          // Zero telemetry: see ADR 0003.
+          strict_min_version: '142.0',
           data_collection_permissions: {
             required: ['none'],
           },
