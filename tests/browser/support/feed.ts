@@ -32,16 +32,41 @@ export function describeEachFixture(body: (fixture: Fixture) => void) {
   }
 }
 
+/** `expect.poll` options with time for two Reels to play out and the Reels Feed to move on. */
+export const TWO_REELS = { timeout: 10_000 };
+
+/**
+ * Waits long enough for the Reels Feed to have started moving had Reels Flow
+ * Advanced, which it does within a frame of a Reel finishing.
+ */
+export function aMomentLater() {
+  return new Promise((resolve) => setTimeout(resolve, 500));
+}
+
 type FixtureWindow = Window & typeof globalThis;
 
 export type ReelsFeed = {
   /** The fixture's own window, with its own DOM classes. */
   window: FixtureWindow;
   document: Document;
-  /** Every Reel's video, top to bottom. */
-  videos: HTMLVideoElement[];
+  /** Every Reel's video, top to bottom, including Reels loaded since. */
+  readonly videos: HTMLVideoElement[];
   settings: SettingsStore;
   clock: TestClock;
+  /**
+   * What the viewer has seen so far, in order: `reel <n> started over`
+   * when the nth video jumps back to its start, `Reels Feed scrolls` when
+   * it starts to move, and `reel <n> in view` once it comes to rest (or
+   * `reel without a video in view` on a Reel Instagram hasn't loaded yet).
+   */
+  timeline: string[];
+  /** Moves to `path` inside Instagram, without a page load. */
+  navigate(path: string): void;
+  /**
+   * Stands in for Instagram loading one more Reel into the Reels Feed, right
+   * below `video`'s Reel. Returns the new Reel's video.
+   */
+  loadReelBelow(video: HTMLVideoElement): HTMLVideoElement;
   /** Tears the engine and the page down. Also runs when the test ends. */
   unmount(): void;
 };
@@ -56,15 +81,23 @@ export async function mountReelsFeed(
   {
     settings = createTestSettingsStore(),
     clock = createTestClock(),
-  }: { settings?: SettingsStore; clock?: TestClock } = {},
+    path = fixture.path,
+    viewport = fixture.viewport,
+  }: {
+    settings?: SettingsStore;
+    clock?: TestClock;
+    /** Where on Instagram the page is when the engine starts. */
+    path?: string;
+    viewport?: Fixture['viewport'];
+  } = {},
 ): Promise<ReelsFeed> {
   const iframe = document.createElement('iframe');
   Object.assign(iframe.style, {
     position: 'fixed',
     top: '0',
     left: '0',
-    width: `${fixture.viewport.width}px`,
-    height: `${fixture.viewport.height}px`,
+    width: `${viewport.width}px`,
+    height: `${viewport.height}px`,
     border: '0',
   });
   // The `fixture` query asks the test server for the page (see vitest.config.ts).
@@ -76,13 +109,15 @@ export async function mountReelsFeed(
   await loaded;
 
   const window = iframe.contentWindow as FixtureWindow;
-  window.history.replaceState(null, '', fixture.path);
-  const videos = [...window.document.querySelectorAll('video')];
+  window.history.replaceState(null, '', path);
+  const videos = () => [...window.document.querySelectorAll('video')];
   // Instagram unloads the Reels above the one being watched, and the snapshot
   // keeps only the space they took, not where the feed was scrolled to: bring
   // the first Reel left in the page, the one being watched, back into view.
-  videos[0]?.scrollIntoView({ block: 'center', behavior: 'instant' });
-  const stopPlaying = playLikeInstagram(window, videos);
+  videos()[0]?.scrollIntoView({ block: 'center', behavior: 'instant' });
+  await nextFrames(window, 2);
+  const player = playLikeInstagram(window, videos());
+  const recording = recordTimeline(window, videos);
   const unmountEngine = mountEngine(window.document, { settings, clock });
 
   let mounted = true;
@@ -90,12 +125,35 @@ export async function mountReelsFeed(
     if (!mounted) return;
     mounted = false;
     unmountEngine();
-    stopPlaying();
+    recording.stop();
+    player.stop();
     iframe.remove();
   };
   onTestFinished(unmount);
 
-  return { window, document: window.document, videos, settings, clock, unmount };
+  return {
+    window,
+    document: window.document,
+    get videos() {
+      return videos();
+    },
+    settings,
+    clock,
+    timeline: recording.timeline,
+    navigate(path) {
+      // How Instagram moves between its pages: no load, no event.
+      window.history.pushState(null, '', path);
+    },
+    loadReelBelow(video) {
+      const reel = reelOf(window, video);
+      const newReel = reel.cloneNode(true) as Element;
+      reel.after(newReel);
+      const newVideo = newReel.querySelector('video')!;
+      player.add(newVideo);
+      return newVideo;
+    },
+    unmount,
+  };
 }
 
 /**
@@ -106,15 +164,18 @@ export async function mountReelsFeed(
  * Videos are muted so they may autoplay.
  */
 function playLikeInstagram(window: FixtureWindow, videos: HTMLVideoElement[]) {
-  const inView = new Map<Element, number>();
+  const inView = new Map<HTMLVideoElement, number>();
   const observer = new window.IntersectionObserver(
     (entries) => {
-      for (const entry of entries) inView.set(entry.target, entry.intersectionRatio);
-      const currentReel = videos.reduce((best, video) =>
-        (inView.get(video) ?? 0) > (inView.get(best) ?? 0) ? video : best,
+      for (const entry of entries) {
+        inView.set(entry.target as HTMLVideoElement, entry.intersectionRatio);
+      }
+      const known = [...inView.keys()];
+      const currentReel = known.reduce((best, video) =>
+        inView.get(video)! > inView.get(best)! ? video : best,
       );
-      for (const video of videos) {
-        if (video === currentReel && (inView.get(video) ?? 0) > 0) {
+      for (const video of known) {
+        if (video === currentReel && inView.get(video)! > 0) {
           if (video.paused) void video.play();
         } else if (!video.paused) {
           video.pause();
@@ -130,13 +191,87 @@ function playLikeInstagram(window: FixtureWindow, videos: HTMLVideoElement[]) {
     void video.play();
   };
 
-  for (const video of videos) {
+  const add = (video: HTMLVideoElement) => {
     video.muted = true;
     video.addEventListener('ended', restart);
     observer.observe(video);
-  }
-  return () => {
-    observer.disconnect();
-    for (const video of videos) video.removeEventListener('ended', restart);
   };
+  videos.forEach(add);
+
+  return {
+    add,
+    stop() {
+      observer.disconnect();
+      for (const video of inView.keys()) video.removeEventListener('ended', restart);
+    },
+  };
+}
+
+/** Writes down what the viewer sees happen, for `ReelsFeed.timeline`. */
+function recordTimeline(window: FixtureWindow, videos: () => HTMLVideoElement[]) {
+  const timeline: string[] = [];
+  let scrolling = false;
+
+  // Seeking, scrolling and scrollend don't bubble: listen as they go down.
+  const listeners: [string, (event: Event) => void][] = [
+    [
+      'seeking',
+      (event) => {
+        const video = event.target as HTMLVideoElement;
+        if (video.currentTime < 0.5) timeline.push(`reel ${videos().indexOf(video)} started over`);
+      },
+    ],
+    [
+      'scroll',
+      () => {
+        if (!scrolling) timeline.push('Reels Feed scrolls');
+        scrolling = true;
+      },
+    ],
+    [
+      'scrollend',
+      () => {
+        scrolling = false;
+        const reel = reelInView(window, videos());
+        timeline.push(reel === -1 ? 'reel without a video in view' : `reel ${reel} in view`);
+      },
+    ],
+  ];
+  for (const [type, listener] of listeners) {
+    window.document.addEventListener(type, listener, true);
+  }
+
+  return {
+    timeline,
+    stop() {
+      for (const [type, listener] of listeners) {
+        window.document.removeEventListener(type, listener, true);
+      }
+    },
+  };
+}
+
+/** The index of the Reel whose video spans the middle of the window. */
+function reelInView(window: FixtureWindow, videos: HTMLVideoElement[]) {
+  const middle = window.innerHeight / 2;
+  return videos.findIndex((video) => {
+    const { top, bottom } = video.getBoundingClientRect();
+    return top <= middle && middle <= bottom;
+  });
+}
+
+/** `video`'s Reel: its ancestor that is one item of the snap-scrolling Reels Feed. */
+function reelOf(window: FixtureWindow, video: HTMLVideoElement) {
+  let reel: Element = video;
+  while (window.getComputedStyle(reel.parentElement!).scrollSnapType === 'none') {
+    reel = reel.parentElement!;
+  }
+  return reel;
+}
+
+function nextFrames(window: FixtureWindow, count: number) {
+  return new Promise<void>((resolve) => {
+    const frame = () => (--count === 0 ? resolve() : window.requestAnimationFrame(frame));
+    window.requestAnimationFrame(frame);
+  });
 }

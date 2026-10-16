@@ -26,6 +26,8 @@ export default defineConfig({
         test: {
           name: 'browser',
           include: ['tests/browser/**/*.test.ts'],
+          // Engine tests wait for real Reels to play out.
+          testTimeout: 15_000,
           browser: {
             enabled: true,
             headless: true,
