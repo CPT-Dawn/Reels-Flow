@@ -10,6 +10,7 @@
   --ig-separator: #dbdbdb;
   --ig-link: #00376b;
   --ig-focus-ring: #0095f6;
+  --ig-badge: #ff3040;
   --ig-switch-off: #dbdbdb;
   --ig-switch-on: #000000;
   --ig-switch-knob: #ffffff;
@@ -88,6 +89,31 @@ body {
   stroke: currentColor;
   stroke-width: 1.8;
   stroke-linejoin: round;
+}
+
+.rf-whats-new {
+  position: relative;
+  padding: 6px 8px;
+  border-radius: 8px;
+  color: var(--ig-primary-text);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.rf-whats-new:hover {
+  background: var(--ig-hover-overlay);
+}
+
+/* Instagram's unread dot. */
+.rf-unread-dot {
+  position: absolute;
+  top: 4px;
+  right: 2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ig-badge);
 }
 
 .rf-controls {

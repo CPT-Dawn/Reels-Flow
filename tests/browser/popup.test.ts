@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import { mountPopup, type PopupOptions } from '@/popup/popup';
 import type { SettingsStore } from '@/settings/settings';
+import type { WhatsNew } from '@/settings/whats-new';
 import { createTestSettingsStore } from './support/settings';
 
 // The real English message file, which Vite serves from public/.
@@ -23,8 +24,18 @@ function openPopup(options: Partial<PopupOptions> & { settings: SettingsStore })
     version: '3.0.0',
     browser: 'chrome',
     openSettingsPage: () => {},
+    whatsNew: whatsNewFlag(false),
     ...options,
   });
+}
+
+/** An in-memory What's new flag, as an update would leave it. */
+function whatsNewFlag(unread: boolean): WhatsNew {
+  return {
+    isUnread: async () => unread,
+    markUnread: async () => void (unread = true),
+    markRead: async () => void (unread = false),
+  };
 }
 
 describe('Auto-Scroll switch', () => {
@@ -97,6 +108,38 @@ describe('links', () => {
     await expect
       .element(page.getByRole('link', { name: 'Support Reels Flow' }))
       .toHaveAttribute('href', 'https://reelsflow.cptdawn.dev/support');
+  });
+});
+
+describe("What's new", () => {
+  const dot = () => page.getByRole('img', { name: 'New' });
+
+  it('shows a dot after an update', async () => {
+    openPopup({ settings: createTestSettingsStore(), whatsNew: whatsNewFlag(true) });
+
+    await expect.element(dot()).toBeVisible();
+  });
+
+  it('shows no dot when there is nothing new', async () => {
+    openPopup({ settings: createTestSettingsStore(), whatsNew: whatsNewFlag(false) });
+    await expect.element(page.getByRole('link', { name: "What's new" })).toBeVisible();
+
+    await expect.element(dot()).not.toBeInTheDocument();
+  });
+
+  it('clears the dot once the viewer opens it', async () => {
+    const whatsNew = whatsNewFlag(true);
+    openPopup({ settings: createTestSettingsStore(), whatsNew });
+    const link = page.getByRole('link', { name: /What's new/ });
+    await expect.element(link).toHaveAttribute('href', 'https://reelsflow.cptdawn.dev/welcome');
+    await expect.element(dot()).toBeVisible();
+    // Stay on the test page rather than following the link.
+    document.addEventListener('click', (event) => event.preventDefault(), { once: true });
+
+    await link.click();
+
+    await expect.element(dot()).not.toBeInTheDocument();
+    expect(await whatsNew.isUnread()).toBe(false);
   });
 });
 
