@@ -5,7 +5,7 @@ Saved copies of instagram.com/reels/, scrubbed of personal data, that every engi
 - `page.html`: the scrubbed page, with Instagram's scripts removed and every Reel's video playing a short clip from `clips/`.
 - `fixture.json`: the size of the window it was captured in, and its `/reels/` address.
 
-`describeEachFixture()` and `mountReelsFeed()` in `tests/browser/support/feed.ts` pick up every folder here on their own; wrap every engine test in `describeEachFixture()` so it runs against all of them. Tests mount the engine onto a fixture with a test settings store and a clock they control. Since the scripts are gone, `mountReelsFeed()` also stands in for Instagram's player: it plays the Current Reel, pauses the others, and sets `loop` on every video at run time as Instagram does (ADR 0001). The captured markup has no `loop` attribute, so none is added to it.
+`describeEachFixture()` and `mountReelsFeed()` in `tests/browser/support/feed.ts` pick up every folder here on their own; wrap every engine test in `describeEachFixture()` so it runs against all of them. Tests mount the engine onto a fixture with a test settings store and a clock they control. Since the scripts are gone, `mountReelsFeed()` also stands in for Instagram's player: it plays the Current Reel, pauses the others, and loops a Reel the way Instagram does (ADR 0001): no `loop` attribute, the video fires `ended` and is sought back to the start.
 
 ## Adding a fixture
 

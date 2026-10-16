@@ -100,9 +100,10 @@ export async function mountReelsFeed(
 
 /**
  * Stands in for Instagram's player, which the scrubbed fixtures no longer
- * have: plays the Current Reel (the one most in view) and pauses the rest,
- * and sets `loop` on every video at run time, as Instagram does (ADR 0001),
- * so a Reel never fires `ended`. Videos are muted so they may autoplay.
+ * have: plays the Current Reel (the one most in view) and pauses the rest.
+ * Like Instagram (see ADR 0001), it loops a Reel without `loop`: the video
+ * ends, fires `ended`, and is sought back to the start and played again.
+ * Videos are muted so they may autoplay.
  */
 function playLikeInstagram(window: FixtureWindow, videos: HTMLVideoElement[]) {
   const inView = new Map<Element, number>();
@@ -123,10 +124,19 @@ function playLikeInstagram(window: FixtureWindow, videos: HTMLVideoElement[]) {
     { threshold: [0, 0.25, 0.5, 0.75, 1] },
   );
 
+  const restart = (event: Event) => {
+    const video = event.target as HTMLVideoElement;
+    video.currentTime = 0;
+    void video.play();
+  };
+
   for (const video of videos) {
     video.muted = true;
-    video.loop = true;
+    video.addEventListener('ended', restart);
     observer.observe(video);
   }
-  return () => observer.disconnect();
+  return () => {
+    observer.disconnect();
+    for (const video of videos) video.removeEventListener('ended', restart);
+  };
 }

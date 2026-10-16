@@ -32,7 +32,7 @@ describeEachFixture((fixture) => {
     expect(reelsFeed.document.defaultView).toBeNull();
   });
 
-  it('plays a real clip in the Current Reel and loops it', async () => {
+  it('plays a real clip in the Current Reel and loops it like Instagram', async () => {
     const reelsFeed = await mountReelsFeed(fixture);
     const playing = () => reelsFeed.videos.find((video) => !video.paused)!;
 
@@ -44,6 +44,5 @@ describeEachFixture((fixture) => {
       .toBeGreaterThan(video.duration - 0.6);
     await expect.poll(() => video.currentTime, { timeout: 5000 }).toBeLessThan(0.6);
     expect(video.paused).toBe(false);
-    expect(video.ended).toBe(false);
   });
 });
