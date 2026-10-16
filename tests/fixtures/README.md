@@ -7,6 +7,8 @@ Saved copies of instagram.com/reels/, scrubbed of personal data, that every engi
 
 `describeEachFixture()` and `mountReelsFeed()` in `tests/browser/support/feed.ts` pick up every folder here on their own; wrap every engine test in `describeEachFixture()` so it runs against all of them. Tests mount the engine onto a fixture with a test settings store and a clock they control. Since the scripts are gone, `mountReelsFeed()` also stands in for Instagram's player: it plays the Current Reel, pauses the others, and loops a Reel the way Instagram does (ADR 0001): no `loop` attribute, the video fires `ended` and is sought back to the start.
 
+Every test starts with nothing open over the Reels Feed: a fixture captured with a panel open (`reels-comments`) has it closed at mount, and a test opens Instagram's comments panel, as captured in `reels-comments`, with `openComments()`. No fixture has captured the Share or More menu yet, so `openMenu()` puts a stand-in dialog in its place; a fixture captured with one open would let the tests use Instagram's own.
+
 ## Adding a fixture
 
 When Instagram changes its page, a fresh copy of the Reels Feed is the first step of the fix.

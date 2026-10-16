@@ -68,6 +68,18 @@ export type ReelsFeed = {
    * below `video`'s Reel. Returns the new Reel's video.
    */
   loadReelBelow(video: HTMLVideoElement): HTMLVideoElement;
+  /**
+   * Opens Instagram's comments panel beside the Current Reel, as captured in
+   * the reels-comments fixture. Returns a function that closes it again, as
+   * its Close button does.
+   */
+  openComments(): Promise<() => void>;
+  /**
+   * Stands in for the menu Instagram opens from the Current Reel's Share or
+   * More button, which no fixture has captured yet: a dialog beside the Reel.
+   * Returns a function that closes it again.
+   */
+  openMenu(button: 'Share' | 'More'): () => void;
   /** Tears the engine and the page down. Also runs when the test ends. */
   unmount(): void;
 };
@@ -112,6 +124,10 @@ export async function mountReelsFeed(
   const window = iframe.contentWindow as FixtureWindow;
   window.history.replaceState(null, '', path);
   const videos = () => [...window.document.querySelectorAll('video')];
+  // Every test starts with nothing open over the Reels Feed, as if the viewer
+  // had closed whatever the fixture was captured with; `openComments()` opens
+  // it again.
+  for (const panel of window.document.querySelectorAll('[role="dialog"]')) popoverOf(panel).remove();
   // Instagram unloads the Reels above the one being watched, and the snapshot
   // keeps only the space they took, not where the feed was scrolled to: bring
   // the first Reel left in the page, the one being watched, back into view.
@@ -153,8 +169,44 @@ export async function mountReelsFeed(
       player.add(newVideo);
       return newVideo;
     },
+    async openComments() {
+      const template = window.document.createElement('template');
+      template.innerHTML = await instagramCommentsPanel();
+      const panel = template.content.firstElementChild!;
+      window.document.body.append(panel);
+      return () => panel.remove();
+    },
+    openMenu(button) {
+      const menu = window.document.createElement('div');
+      menu.setAttribute('role', 'dialog');
+      menu.setAttribute('aria-label', button);
+      menu.style.cssText = 'position: fixed; top: 40%; right: 10%; width: 300px; height: 200px';
+      window.document.body.append(menu);
+      return () => menu.remove();
+    },
     unmount,
   };
+}
+
+/** The fixture captured with Instagram's comments panel open. */
+const COMMENTS_FIXTURE = 'reels-comments';
+
+let commentsPanel: Promise<string> | undefined;
+
+/** The markup of Instagram's comments panel, from `COMMENTS_FIXTURE`. */
+function instagramCommentsPanel() {
+  commentsPanel ??= fetch(`/reels/?fixture=${COMMENTS_FIXTURE}`)
+    .then((response) => response.text())
+    .then((html) => {
+      const page = new DOMParser().parseFromString(html, 'text/html');
+      return popoverOf(page.querySelector('[role="dialog"]')!).outerHTML;
+    });
+  return commentsPanel;
+}
+
+/** The box Instagram positions a panel in, beside the Reel it belongs to. */
+function popoverOf(panel: Element) {
+  return panel.closest('[style*="translate"]') ?? panel;
 }
 
 /**

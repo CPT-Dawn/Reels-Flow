@@ -1,4 +1,5 @@
 import type { Settings, SettingsStore } from '@/settings/settings';
+import { watchHolds } from './holds';
 import { placeReelControls, type ReelControls } from './reel-control';
 import { watchReelEnds } from './reel-end';
 import { advance, currentReelVideo, goToReelBeside } from './reels-feed';
@@ -62,8 +63,11 @@ export function mountEngine(
   };
 
   const unwatchRoute = whileOnReelsFeed(document.defaultView!, clock, () => {
+    const holds = watchHolds(document, clock);
     const unwatchEnds = watchReelEnds(document, (video) => {
-      if (current?.autoScroll && video === currentReelVideo(document)) advance(video);
+      if (current?.autoScroll && video === currentReelVideo(document) && !holds.isHeld(video)) {
+        advance(video);
+      }
     });
     const unwatchShortcuts = watchShortcuts(document, () => current?.shortcuts, {
       toggleAutoScroll,
@@ -74,6 +78,7 @@ export function mountEngine(
     if (current) reelControls.update(current);
     return () => {
       unwatchEnds();
+      holds.stop();
       unwatchShortcuts();
       reelControls!.remove();
       reelControls = undefined;
