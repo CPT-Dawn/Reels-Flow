@@ -18,5 +18,25 @@
   "settingsPageTitle": {
     "message": "Reels Flow Settings",
     "description": "Document title of the Settings Page."
+  },
+  "popupAutoScroll": {
+    "message": "Auto-Scroll",
+    "description": "Popup switch that turns Auto-Scroll on or off."
+  },
+  "popupReelControl": {
+    "message": "Button on Reels",
+    "description": "Popup switch that shows or hides the Reel Control, Reels Flow's Auto-Scroll button beside each Reel."
+  },
+  "popupSettings": {
+    "message": "Settings",
+    "description": "Popup button that opens the Settings Page."
+  },
+  "popupReportProblem": {
+    "message": "Report a problem",
+    "description": "Popup footer link to the Report Page."
+  },
+  "popupSupport": {
+    "message": "Support Reels Flow",
+    "description": "Popup footer link to the Support Page, where a viewer can choose to donate. Shown after a heart."
   }
 }

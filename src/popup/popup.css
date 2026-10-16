@@ -1,0 +1,188 @@
+/* Instagram's own colour tokens and type stack, so the Popup feels native.
+   The brand is Reels Flow's: its icon and name, never Instagram's marks. */
+:root {
+  color-scheme: light dark;
+  --ig-primary-background: #ffffff;
+  --ig-secondary-background: #fafafa;
+  --ig-hover-overlay: rgba(0, 0, 0, 0.05);
+  --ig-primary-text: #000000;
+  --ig-secondary-text: #737373;
+  --ig-separator: #dbdbdb;
+  --ig-link: #00376b;
+  --ig-focus-ring: #0095f6;
+  --ig-switch-off: #dbdbdb;
+  --ig-switch-on: #000000;
+  --ig-switch-knob: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ig-primary-background: #000000;
+    --ig-secondary-background: #121212;
+    --ig-hover-overlay: rgba(255, 255, 255, 0.1);
+    --ig-primary-text: #f5f5f5;
+    --ig-secondary-text: #a8a8a8;
+    --ig-separator: #363636;
+    --ig-link: #e0f1ff;
+    --ig-switch-off: #363636;
+    --ig-switch-on: #f5f5f5;
+    --ig-switch-knob: #000000;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--ig-primary-background);
+  color: var(--ig-primary-text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.rf-popup {
+  width: 300px;
+}
+
+.rf-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 12px 12px 16px;
+  border-bottom: 1px solid var(--ig-separator);
+}
+
+.rf-brand-icon {
+  width: 28px;
+  height: 28px;
+}
+
+.rf-brand-name {
+  flex: 1;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.rf-settings-button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.rf-settings-button:hover {
+  background: var(--ig-hover-overlay);
+}
+
+.rf-settings-button svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+}
+
+.rf-controls {
+  padding: 4px 0;
+}
+
+.rf-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+}
+
+.rf-row:hover {
+  background: var(--ig-hover-overlay);
+}
+
+/* A native checkbox drawn as Instagram's switch, so it keeps its keyboard
+   and screen reader behaviour. */
+.rf-switch {
+  appearance: none;
+  position: relative;
+  flex: none;
+  width: 44px;
+  height: 24px;
+  margin: 0;
+  border-radius: 12px;
+  background: var(--ig-switch-off);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.rf-switch::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--ig-switch-knob);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s;
+}
+
+.rf-switch:checked {
+  background: var(--ig-switch-on);
+}
+
+.rf-switch:checked::before {
+  transform: translateX(20px);
+}
+
+.rf-switch:disabled {
+  opacity: 0.4;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ig-focus-ring);
+  outline-offset: 2px;
+}
+
+.rf-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--ig-separator);
+  background: var(--ig-secondary-background);
+}
+
+.rf-footer a {
+  text-decoration: none;
+}
+
+.rf-footer a:hover {
+  text-decoration: underline;
+}
+
+.rf-report {
+  color: var(--ig-link);
+  font-weight: 600;
+}
+
+.rf-support {
+  color: var(--ig-secondary-text);
+  font-size: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rf-switch,
+  .rf-switch::before {
+    transition: none;
+  }
+}
