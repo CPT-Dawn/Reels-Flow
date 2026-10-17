@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { describeEachFixture, mountReelsFeed } from './support/feed';
+import { describeEachFixture, expectTimeline, mountReelsFeed } from './support/feed';
 
 describeEachFixture((fixture) => {
   it('opens on the Reels Feed in the window it was captured in', async () => {
@@ -44,5 +44,19 @@ describeEachFixture((fixture) => {
       .toBeGreaterThan(video.duration - 0.6);
     await expect.poll(() => video.currentTime, { timeout: 5000 }).toBeLessThan(0.6);
     expect(video.paused).toBe(false);
+  });
+
+  it('writes down a Reel starting over before the Advance it ended with, however busy the page', async () => {
+    const reelsFeed = await mountReelsFeed(fixture);
+    // Keeps the page busy right after the player starts a video over, so a
+    // frame falls due, and the Advance scrolls, before the seek reports.
+    for (const video of reelsFeed.videos) {
+      video.addEventListener('ended', () => {
+        const until = performance.now() + 40;
+        while (performance.now() < until);
+      });
+    }
+
+    await expectTimeline(reelsFeed, ['reel 0 started over', 'Reels Feed scrolls', 'reel 1 in view']);
   });
 });
