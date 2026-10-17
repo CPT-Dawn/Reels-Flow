@@ -1,4 +1,6 @@
 import type { Settings, SettingsStore } from '@/settings/settings';
+import type { WhatsNew } from '@/lifecycle/whats-new';
+import { REPORT_PAGE, SUPPORT_PAGE, WELCOME_PAGE } from '@/site';
 import './popup.css';
 
 /** The keys in the message files the Popup shows. */
@@ -8,6 +10,8 @@ export type PopupMessage =
   | 'popupSpeed'
   | 'popupReelControl'
   | 'popupSettings'
+  | 'popupWhatsNew'
+  | 'popupWhatsNewUnread'
   | 'popupReportProblem'
   | 'popupSupport';
 
@@ -20,10 +24,9 @@ export type PopupOptions = {
   /** The browser this build is for, passed along to the Report Page. */
   browser: string;
   openSettingsPage: () => void;
+  /** Whether an update brought news the viewer hasn't opened yet. */
+  whatsNew: WhatsNew;
 };
-
-// Fixed paths on the Reels Flow website: see ADR 0002.
-const SITE = 'https://reelsflow.cptdawn.dev';
 
 type Switch = {
   key: 'autoScroll' | 'speedOn' | 'reelControlShown';
@@ -41,7 +44,7 @@ const SWITCHES: Switch[] = [
  */
 export function mountPopup(
   document: Document,
-  { settings, message, version, browser, openSettingsPage }: PopupOptions,
+  { settings, message, version, browser, openSettingsPage, whatsNew }: PopupOptions,
 ): () => void {
   const element = <K extends keyof HTMLElementTagNameMap>(
     tag: K,
@@ -62,11 +65,31 @@ export function mountPopup(
   settingsButton.title = message('popupSettings');
   settingsButton.setAttribute('aria-label', message('popupSettings'));
   settingsButton.addEventListener('click', () => openSettingsPage());
+
+  // The Welcome Page carries the news.
+  const whatsNewLink = opensInNewTab(
+    element('a', 'rf-whats-new', message('popupWhatsNew')),
+    WELCOME_PAGE,
+  );
+  const unreadDot = element('span', 'rf-unread-dot');
+  unreadDot.setAttribute('role', 'img');
+  unreadDot.setAttribute('aria-label', message('popupWhatsNewUnread'));
+  let whatsNewOpened = false;
+  whatsNewLink.addEventListener('click', () => {
+    whatsNewOpened = true;
+    unreadDot.remove();
+    void whatsNew.markRead();
+  });
+  void whatsNew.isUnread().then((unread) => {
+    if (unread && !whatsNewOpened) whatsNewLink.append(unreadDot);
+  });
+
   const header = element(
     'header',
     'rf-header',
     icon,
     element('h1', 'rf-brand-name', message('extensionShortName')),
+    whatsNewLink,
     settingsButton,
   );
 
@@ -84,7 +107,7 @@ export function mountPopup(
   });
   const controls = element('section', 'rf-controls', ...inputs.map(({ row }) => row));
 
-  const reportUrl = new URL('/report', SITE);
+  const reportUrl = new URL(REPORT_PAGE);
   reportUrl.searchParams.set('version', version);
   reportUrl.searchParams.set('browser', browser);
   const heart = element('span', '', '♡ ');
@@ -93,7 +116,7 @@ export function mountPopup(
     'footer',
     'rf-footer',
     opensInNewTab(element('a', 'rf-report', message('popupReportProblem')), reportUrl.href),
-    opensInNewTab(element('a', 'rf-support', heart, message('popupSupport')), `${SITE}/support`),
+    opensInNewTab(element('a', 'rf-support', heart, message('popupSupport')), SUPPORT_PAGE),
   );
 
   const popup = element('main', 'rf-popup', header, controls, footer);

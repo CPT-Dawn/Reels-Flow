@@ -1,1 +1,5 @@
-export default defineBackground(() => {});
+import { startLifecycle } from '@/lifecycle/lifecycle';
+
+export default defineBackground(() => {
+  startLifecycle();
+});

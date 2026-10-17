@@ -92,3 +92,9 @@ export function createSettingsStore(): SettingsStore {
   };
   return store;
 }
+
+/** Whether any setting has been saved, here or on another synced device. */
+export async function hasSavedSettings(): Promise<boolean> {
+  const items = await storage.getItems(KEYS.map(storageKey));
+  return items.some(({ value }) => value != null);
+}

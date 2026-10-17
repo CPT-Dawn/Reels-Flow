@@ -35,6 +35,14 @@
     "message": "Settings",
     "description": "Popup button that opens the Settings Page."
   },
+  "popupWhatsNew": {
+    "message": "What's new",
+    "description": "Popup link to the Welcome Page on the Reels Flow website, which describes what changed in recent versions."
+  },
+  "popupWhatsNewUnread": {
+    "message": "New",
+    "description": "What screen readers call the dot on the Popup's What's new link, shown after an update until the viewer opens it."
+  },
   "popupReportProblem": {
     "message": "Report a problem",
     "description": "Popup footer link to the Report Page."

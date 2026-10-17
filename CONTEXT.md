@@ -74,6 +74,10 @@ _Avoid_: Dashboard, control center, menu
 The full-page settings screen for less-used options: Shortcuts and the Preferred Speed.
 _Avoid_: Options page, preferences
 
+**What's new**:
+The Popup link to news about recent versions. After an update it carries a dot until the viewer opens it; updates never open a tab on their own.
+_Avoid_: Changelog, release notes, update notification
+
 ### Outreach
 
 **Support Page**:
@@ -81,7 +85,7 @@ The page on the Reels Flow website where a viewer can choose to donate. The exte
 _Avoid_: Donate link, tip jar
 
 **Welcome Page**:
-The page on the Reels Flow website opened once, right after a fresh install.
+The page on the Reels Flow website opened once, right after a fresh install or an upgrade from 2.x (then showing what's new in v3). The Popup's What's new link also leads here.
 _Avoid_: Onboarding tab, landing page
 
 **Report Page**:
