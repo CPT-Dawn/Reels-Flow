@@ -1,3 +1,4 @@
+import { sessionAt, type Session, type SessionStore } from '@/settings/session';
 import type { Settings, SettingsStore } from '@/settings/settings';
 import type { WhatsNew } from '@/lifecycle/whats-new';
 import { REPORT_PAGE, SUPPORT_PAGE, WELCOME_PAGE } from '@/site';
@@ -9,6 +10,7 @@ export type PopupMessage =
   | 'popupAutoScroll'
   | 'popupSpeed'
   | 'popupReelControl'
+  | 'popupReelsWatched'
   | 'popupSettings'
   | 'popupWhatsNew'
   | 'popupWhatsNewUnread'
@@ -17,6 +19,10 @@ export type PopupMessage =
 
 export type PopupOptions = {
   settings: SettingsStore;
+  /** The current Session, kept by the Reels Feed tabs. */
+  session: SessionStore;
+  /** The time now, in ms since the epoch: `Date.now` outside tests. */
+  now?: () => number;
   /** Looks up a localised message by its key in the message files. */
   message: (key: PopupMessage) => string;
   /** The extension version, passed along to the Report Page. */
@@ -44,7 +50,7 @@ const SWITCHES: Switch[] = [
  */
 export function mountPopup(
   document: Document,
-  { settings, message, version, browser, openSettingsPage, whatsNew }: PopupOptions,
+  { settings, session, now = Date.now, message, version, browser, openSettingsPage, whatsNew }: PopupOptions,
 ): () => void {
   const element = <K extends keyof HTMLElementTagNameMap>(
     tag: K,
@@ -105,7 +111,13 @@ export function mountPopup(
     const row = element('label', 'rf-row', element('span', 'rf-row-label', message(label)), input);
     return { key, input, row };
   });
-  const controls = element('section', 'rf-controls', ...inputs.map(({ row }) => row));
+  const reelsWatchedLabel = element('span', 'rf-row-label', message('popupReelsWatched'));
+  reelsWatchedLabel.id = 'rf-reels-watched-label';
+  // Blank until the Session arrives, so nothing shows a guess.
+  const reelsWatched = element('output', 'rf-count');
+  reelsWatched.setAttribute('aria-labelledby', reelsWatchedLabel.id);
+  const reelsWatchedRow = element('div', 'rf-row rf-stat', reelsWatchedLabel, reelsWatched);
+  const controls = element('section', 'rf-controls', ...inputs.map(({ row }) => row), reelsWatchedRow);
 
   const reportUrl = new URL(REPORT_PAGE);
   reportUrl.searchParams.set('version', version);
@@ -138,8 +150,21 @@ export function mountPopup(
     if (!changedSinceRead) show(current);
   });
 
+  const showSession = (stored: Session) => {
+    reelsWatched.value = String(sessionAt(stored, now()).reelsWatched);
+  };
+  let sessionChangedSinceRead = false;
+  const unwatchSession = session.watch((stored) => {
+    sessionChangedSinceRead = true;
+    showSession(stored);
+  });
+  void session.get().then((stored) => {
+    if (!sessionChangedSinceRead) showSession(stored);
+  });
+
   return () => {
     unwatch();
+    unwatchSession();
     popup.remove();
   };
 }

@@ -1,14 +1,21 @@
+import type { SessionStore } from '@/settings/session';
 import type { Settings, SettingsStore } from '@/settings/settings';
 import { watchHolds } from './holds';
 import { placeReelControls, type ReelControls } from './reel-control';
 import { watchReelEnds } from './reel-end';
 import { advance, currentReelVideo, goToReelBeside } from './reels-feed';
 import { whileOnReelsFeed } from './route';
+import { trackSession } from './session';
 import { watchShortcuts } from './shortcuts';
 import { watchSpeed, type Speed } from './speed';
 
 /** Time as the engine sees it, so tests can move it forward by hand. */
 export interface Clock {
+  /**
+   * Time in ms. In the browser it is ms since the epoch, so other tabs and
+   * later page loads can compare it, yet it never jumps with the system clock
+   * while the page is open.
+   */
   now(): number;
   setTimeout(callback: () => void, ms: number): number;
   clearTimeout(id: number): void;
@@ -22,6 +29,8 @@ export type GetMessage = (
 
 export type EngineOptions = {
   settings: SettingsStore;
+  /** The current Session, shared with the other tabs and the Popup. */
+  session: SessionStore;
   /** The browser's localised strings, `browser.i18n.getMessage` in the extension. */
   getMessage: GetMessage;
   clock?: Clock;
@@ -36,7 +45,7 @@ export type EngineOptions = {
  */
 export function mountEngine(
   document: Document,
-  { settings, getMessage, clock = windowClock(document.defaultView!) }: EngineOptions,
+  { settings, session, getMessage, clock = windowClock(document.defaultView!) }: EngineOptions,
 ): () => void {
   // Unknown until the settings arrive, so nothing moves on a guess.
   let current: Settings | undefined;
@@ -88,7 +97,9 @@ export function mountEngine(
       reelControls.update(current);
       speed.update(current);
     }
+    const stopTrackingSession = trackSession(document, clock, session);
     return () => {
+      stopTrackingSession();
       speed!.stop();
       speed = undefined;
       unwatchEnds();
@@ -107,7 +118,7 @@ export function mountEngine(
 
 function windowClock(window: Window): Clock {
   return {
-    now: () => window.performance.now(),
+    now: () => window.performance.timeOrigin + window.performance.now(),
     setTimeout: (callback, ms) => window.setTimeout(callback, ms),
     clearTimeout: (id) => window.clearTimeout(id),
   };

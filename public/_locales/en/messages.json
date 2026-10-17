@@ -31,6 +31,10 @@
     "message": "Button on Reels",
     "description": "Popup switch that shows or hides the Reel Control, Reels Flow's Auto-Scroll button beside each Reel."
   },
+  "popupReelsWatched": {
+    "message": "Reels watched this session",
+    "description": "Popup label beside the count of Reels the viewer has watched in the current Session, one continuous stretch of watching the Reels Feed (instagram.com/reels/) that ends after 30 minutes with no Reel playing."
+  },
   "popupSettings": {
     "message": "Settings",
     "description": "Popup button that opens the Settings Page."

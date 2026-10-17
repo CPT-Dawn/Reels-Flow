@@ -133,6 +133,21 @@ body {
   background: var(--ig-hover-overlay);
 }
 
+/* A count to read, not a control: no hover. */
+.rf-stat {
+  cursor: default;
+}
+
+.rf-stat:hover {
+  background: none;
+}
+
+.rf-count {
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
 /* A native checkbox drawn as Instagram's switch, so it keeps its keyboard
    and screen reader behaviour. */
 .rf-switch {

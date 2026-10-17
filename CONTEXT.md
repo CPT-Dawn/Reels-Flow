@@ -41,7 +41,7 @@ _Avoid_: Custom speed, rate
 ### Wellbeing
 
 **Session**:
-One continuous stretch of watching the Reels Feed. It ends after 30 minutes away from the Reels Feed.
+One continuous stretch of watching the Reels Feed. It ends after 30 minutes with no Reel playing, whether the viewer was away from the Reels Feed or left it paused in front of them.
 _Avoid_: Visit, sitting
 
 **Reels Watched**:
