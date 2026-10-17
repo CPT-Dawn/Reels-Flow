@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { page } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import { mountPopup, type PopupOptions } from '@/popup/popup';
 import type { SettingsStore } from '@/settings/settings';
 import type { WhatsNew } from '@/lifecycle/whats-new';
@@ -200,5 +200,73 @@ describe('Reels Watched', () => {
     openPopup({ settings: createTestSettingsStore(), session });
 
     await expect.element(page.getByRole('status', { name: 'Reels watched this session' })).toHaveTextContent('0');
+  });
+});
+
+describe('Session Limit', () => {
+  const kind = () => page.getByRole('combobox', { name: 'Session limit' });
+
+  it('is off by default', async () => {
+    openPopup({ settings: createTestSettingsStore() });
+
+    await expect.element(kind()).toHaveValue('off');
+    await expect.element(page.getByRole('spinbutton')).not.toBeInTheDocument();
+  });
+
+  it('sets a limit in Reels Watched', async () => {
+    const settings = createTestSettingsStore();
+    openPopup({ settings });
+
+    await kind().selectOptions('Reels');
+    const reels = page.getByRole('spinbutton', { name: 'Reels before a break' });
+    await reels.fill('40');
+    await userEvent.tab();
+
+    await expect.poll(async () => (await settings.get()).sessionLimit).toEqual({ kind: 'reels', value: 40 });
+  });
+
+  it('sets a limit in minutes', async () => {
+    const settings = createTestSettingsStore();
+    openPopup({ settings });
+
+    await kind().selectOptions('Minutes');
+    const minutes = page.getByRole('spinbutton', { name: 'Minutes before a break' });
+    await minutes.fill('45');
+    await userEvent.tab();
+
+    await expect.poll(async () => (await settings.get()).sessionLimit).toEqual({ kind: 'minutes', value: 45 });
+  });
+
+  it('turns the limit off', async () => {
+    const settings = createTestSettingsStore({ sessionLimit: { kind: 'minutes', value: 20 } });
+    openPopup({ settings });
+    await expect.element(page.getByRole('spinbutton', { name: 'Minutes before a break' })).toHaveValue(20);
+
+    await kind().selectOptions('Off');
+
+    await expect.poll(async () => (await settings.get()).sessionLimit).toEqual({ kind: 'off' });
+  });
+
+  it('keeps a limit of at least one', async () => {
+    const settings = createTestSettingsStore({ sessionLimit: { kind: 'reels', value: 30 } });
+    openPopup({ settings });
+    const reels = page.getByRole('spinbutton', { name: 'Reels before a break' });
+
+    await reels.fill('0');
+    await userEvent.tab();
+
+    await expect.poll(async () => (await settings.get()).sessionLimit).toEqual({ kind: 'reels', value: 1 });
+    await expect.element(reels).toHaveValue(1);
+  });
+
+  it('follows a change made in another tab', async () => {
+    const settings = createTestSettingsStore();
+    openPopup({ settings });
+    await expect.element(kind()).toHaveValue('off');
+
+    await settings.set({ sessionLimit: { kind: 'reels', value: 25 } });
+
+    await expect.element(kind()).toHaveValue('reels');
+    await expect.element(page.getByRole('spinbutton', { name: 'Reels before a break' })).toHaveValue(25);
   });
 });

@@ -1,4 +1,5 @@
 import { storage } from 'wxt/utils/storage';
+import type { SessionLimit } from './settings';
 
 /**
  * How long with no Reel playing ends a Session, in ms: away from the Reels
@@ -15,6 +16,12 @@ export type Session = {
    * since the epoch; 0 if never.
    */
   lastSeenAt: number;
+  /**
+   * Where the Session Limit counts from: the Session as it stood when the
+   * viewer last answered the Break Nudge, so the next one comes only after
+   * another full limit. Absent until they first do.
+   */
+  limitFrom?: Pick<Session, 'reelsWatched' | 'playingMs'>;
 };
 
 export const NO_SESSION: Session = { reelsWatched: 0, playingMs: 0, lastSeenAt: 0 };
@@ -25,6 +32,15 @@ export const NO_SESSION: Session = { reelsWatched: 0, playingMs: 0, lastSeenAt: 
  */
 export function sessionAt(stored: Session, now: number): Session {
   return now - stored.lastSeenAt >= SESSION_GAP ? NO_SESSION : stored;
+}
+
+/** Whether `session` has reached `limit` since it last counted from, by Reels Watched or playing minutes. */
+export function limitReached(session: Session, limit: SessionLimit): boolean {
+  if (limit.kind === 'off') return false;
+  const from = session.limitFrom ?? NO_SESSION;
+  return limit.kind === 'reels'
+    ? session.reelsWatched - from.reelsWatched >= limit.value
+    : session.playingMs - from.playingMs >= limit.value * 60_000;
 }
 
 /** The current Session, shared by every tab and the Popup. */

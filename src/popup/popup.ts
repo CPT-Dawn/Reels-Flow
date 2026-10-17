@@ -1,5 +1,5 @@
 import { sessionAt, type Session, type SessionStore } from '@/settings/session';
-import type { Settings, SettingsStore } from '@/settings/settings';
+import type { SessionLimit, Settings, SettingsStore } from '@/settings/settings';
 import type { WhatsNew } from '@/lifecycle/whats-new';
 import { REPORT_PAGE, SUPPORT_PAGE, WELCOME_PAGE } from '@/site';
 import './popup.css';
@@ -15,7 +15,21 @@ export type PopupMessage =
   | 'popupWhatsNew'
   | 'popupWhatsNewUnread'
   | 'popupReportProblem'
-  | 'popupSupport';
+  | 'popupSupport'
+  | 'popupSessionLimit'
+  | 'popupSessionLimitOff'
+  | 'popupSessionLimitReels'
+  | 'popupSessionLimitMinutes'
+  | 'popupSessionLimitReelsValue'
+  | 'popupSessionLimitMinutesValue';
+
+type LimitKind = SessionLimit['kind'];
+
+/** The Session Limit a kind starts at when the viewer picks it. */
+const LIMIT_STARTS_AT = { reels: 30, minutes: 30 };
+
+/** The largest Session Limit the Popup takes, in Reels or minutes. */
+const LIMIT_MAX = 999;
 
 export type PopupOptions = {
   settings: SettingsStore;
@@ -117,7 +131,72 @@ export function mountPopup(
   const reelsWatched = element('output', 'rf-count');
   reelsWatched.setAttribute('aria-labelledby', reelsWatchedLabel.id);
   const reelsWatchedRow = element('div', 'rf-row rf-stat', reelsWatchedLabel, reelsWatched);
-  const controls = element('section', 'rf-controls', ...inputs.map(({ row }) => row), reelsWatchedRow);
+
+  // The Session Limit: off, or a number of Reels or minutes before a break.
+  const limitKind = element('select', 'rf-select');
+  limitKind.id = 'rf-session-limit';
+  const kinds: [LimitKind, PopupMessage][] = [
+    ['off', 'popupSessionLimitOff'],
+    ['reels', 'popupSessionLimitReels'],
+    ['minutes', 'popupSessionLimitMinutes'],
+  ];
+  for (const [value, label] of kinds) {
+    const option = element('option', '', message(label));
+    option.value = value;
+    limitKind.append(option);
+  }
+  // Disabled until the settings arrive, so nothing shows a guess.
+  limitKind.disabled = true;
+  const limitValue = element('input', 'rf-number');
+  limitValue.type = 'number';
+  limitValue.min = '1';
+  limitValue.max = String(LIMIT_MAX);
+  limitValue.step = '1';
+  limitValue.inputMode = 'numeric';
+  const limitLabel = element('label', 'rf-row-label', message('popupSessionLimit'));
+  limitLabel.htmlFor = limitKind.id;
+  const limitInputs = element('span', 'rf-limit-inputs', limitKind);
+  const limitRow = element('div', 'rf-row rf-limit', limitLabel, limitInputs);
+
+  const setLimit = (sessionLimit: SessionLimit) => {
+    showLimit(sessionLimit);
+    void settings.set({ sessionLimit });
+  };
+  limitKind.addEventListener('change', () => {
+    const kind = limitKind.value as LimitKind;
+    setLimit(kind === 'off' ? { kind } : { kind, value: LIMIT_STARTS_AT[kind] });
+  });
+  limitValue.addEventListener('change', () => {
+    const kind = limitKind.value as LimitKind;
+    if (kind === 'off') return;
+    const typed = Math.round(limitValue.valueAsNumber);
+    const value = Number.isNaN(typed) ? LIMIT_STARTS_AT[kind] : Math.min(Math.max(typed, 1), LIMIT_MAX);
+    setLimit({ kind, value });
+  });
+
+  const showLimit = (sessionLimit: SessionLimit) => {
+    limitKind.value = sessionLimit.kind;
+    limitKind.disabled = false;
+    if (sessionLimit.kind === 'off') {
+      limitValue.remove();
+      return;
+    }
+    limitValue.setAttribute(
+      'aria-label',
+      message(sessionLimit.kind === 'reels' ? 'popupSessionLimitReelsValue' : 'popupSessionLimitMinutesValue'),
+    );
+    // Not while the viewer is typing a new one.
+    if (document.activeElement !== limitValue) limitValue.value = String(sessionLimit.value);
+    if (!limitValue.isConnected) limitInputs.prepend(limitValue);
+  };
+
+  const controls = element(
+    'section',
+    'rf-controls',
+    ...inputs.map(({ row }) => row),
+    limitRow,
+    reelsWatchedRow,
+  );
 
   const reportUrl = new URL(REPORT_PAGE);
   reportUrl.searchParams.set('version', version);
@@ -139,6 +218,7 @@ export function mountPopup(
       input.checked = current[key];
       input.disabled = false;
     }
+    showLimit(current.sessionLimit);
   };
 
   let changedSinceRead = false;

@@ -35,6 +35,30 @@
     "message": "Reels watched this session",
     "description": "Popup label beside the count of Reels the viewer has watched in the current Session, one continuous stretch of watching the Reels Feed (instagram.com/reels/) that ends after 30 minutes with no Reel playing."
   },
+  "popupSessionLimit": {
+    "message": "Session limit",
+    "description": "Popup label of the optional Session Limit: a break nudge after a number of Reels or minutes in one Session, one continuous stretch of watching Instagram Reels."
+  },
+  "popupSessionLimitOff": {
+    "message": "Off",
+    "description": "Popup choice for the Session Limit: no limit."
+  },
+  "popupSessionLimitReels": {
+    "message": "Reels",
+    "description": "Popup choice for the Session Limit: a number of Reels watched."
+  },
+  "popupSessionLimitMinutes": {
+    "message": "Minutes",
+    "description": "Popup choice for the Session Limit: a number of minutes of Reels playing."
+  },
+  "popupSessionLimitReelsValue": {
+    "message": "Reels before a break",
+    "description": "What screen readers call the Popup's number field for a Session Limit in Reels."
+  },
+  "popupSessionLimitMinutesValue": {
+    "message": "Minutes before a break",
+    "description": "What screen readers call the Popup's number field for a Session Limit in minutes."
+  },
   "popupSettings": {
     "message": "Settings",
     "description": "Popup button that opens the Settings Page."
@@ -126,5 +150,21 @@
   "settingsPreferredSpeedHint": {
     "message": "How fast Reels play while Speed is on. Switch Speed on or off from the toolbar button or with its Shortcut.",
     "description": "Settings Page text under the Speed heading."
+  },
+  "breakNudgeTitle": {
+    "message": "Time for a break?",
+    "description": "Title of the Break Nudge, the calm notice over the Reels Feed when the viewer reaches the Session Limit they set. No guilt-trip wording."
+  },
+  "breakNudgeText": {
+    "message": "You've reached the session limit you set. Keep watching, or stop here.",
+    "description": "Text under the Break Nudge's title. Calm, no guilt-trip wording, no numbers or countdown."
+  },
+  "breakNudgeKeepWatching": {
+    "message": "Keep watching",
+    "description": "The Break Nudge's main button, also chosen by Space, Enter or Escape: the Reel plays on, and the next Break Nudge comes after another full Session Limit."
+  },
+  "breakNudgeDone": {
+    "message": "I'm done",
+    "description": "The Break Nudge's other button: turns Auto-Scroll off and leaves the Reel paused."
   }
 }
