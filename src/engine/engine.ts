@@ -10,7 +10,11 @@ import { watchShortcuts } from './shortcuts';
 
 /** Time as the engine sees it, so tests can move it forward by hand. */
 export interface Clock {
-  /** Wall-clock time in ms since the epoch, comparable across tabs and page loads. */
+  /**
+   * Time in ms. In the browser it is ms since the epoch, so other tabs and
+   * later page loads can compare it, yet it never jumps with the system clock
+   * while the page is open.
+   */
   now(): number;
   setTimeout(callback: () => void, ms: number): number;
   clearTimeout(id: number): void;
@@ -100,7 +104,7 @@ export function mountEngine(
 
 function windowClock(window: Window): Clock {
   return {
-    now: () => Date.now(),
+    now: () => window.performance.timeOrigin + window.performance.now(),
     setTimeout: (callback, ms) => window.setTimeout(callback, ms),
     clearTimeout: (id) => window.clearTimeout(id),
   };

@@ -29,7 +29,7 @@
   },
   "popupReelsWatched": {
     "message": "Reels watched this session",
-    "description": "Popup label beside the count of Reels the viewer has watched in the current Session, one continuous stretch of watching that ends after 30 minutes away from Reels."
+    "description": "Popup label beside the count of Reels the viewer has watched in the current Session, one continuous stretch of watching the Reels Feed (instagram.com/reels/) that ends after 30 minutes away from it."
   },
   "popupSettings": {
     "message": "Settings",
