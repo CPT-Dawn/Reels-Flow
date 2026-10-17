@@ -2,7 +2,7 @@
   "name": "reels-flow",
   "description": "Watch Instagram Reels hands-free.",
   "private": true,
-  "version": "3.0.0-dev",
+  "version": "3.0.0",
   "type": "module",
   "scripts": {
     "dev": "wxt",
