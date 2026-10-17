@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { aMomentLater, describeEachFixture, expectTimeline, mountReelsFeed, playedTo } from './support/feed';
+import { aMomentLater, describeEachFixture, expectAdvancedTo, expectTimeline, mountReelsFeed, playedTo } from './support/feed';
 
 describeEachFixture((fixture) => {
   it('Advances to the next Reel each time the Current Reel finishes', async () => {
@@ -38,14 +38,7 @@ describeEachFixture((fixture) => {
       video.playbackRate = 3;
     }
 
-    await expectTimeline(reelsFeed, [
-      'reel 0 started over',
-      'Reels Feed scrolls',
-      'reel 1 in view',
-      'reel 1 started over',
-      'Reels Feed scrolls',
-      'reel 2 in view',
-    ]);
+    await expectAdvancedTo(reelsFeed, 2);
   });
 
   it('plays a Reel to its end before Advancing when it is started over after a pause late on', async () => {

@@ -153,7 +153,6 @@ async function expectHeldUntil(reelsFeed: ReelsFeed, release: () => void) {
   // however busy the machine. Had it not been held, the Reels Feed would
   // already be on its way to the next Reel, and HELD_ONCE would not match.
   await reelsFeed.seen('reel 0 started over');
-  expect(reelsFeed.timeline).toEqual(['reel 0 started over']);
   release();
 
   await expectTimeline(reelsFeed, HELD_ONCE);

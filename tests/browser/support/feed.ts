@@ -48,13 +48,37 @@ export function expectTimeline(reelsFeed: ReelsFeed, expected: string[], options
 }
 
 /**
+ * Waits for the Reels Feed to come to rest on reel `reel`, and expects every
+ * Reel above it to have finished on the way, in order, each Advanced from
+ * once. At high Speed a Reel can play out while the Reels Feed is still
+ * scrolling to it, or once more as it scrolls away, so the order of those
+ * against the scrolling is left open.
+ */
+export async function expectAdvancedTo(reelsFeed: ReelsFeed, reel: number, options = TWO_REELS) {
+  const landed = `reel ${reel} in view`;
+  await expect.poll(() => reelsFeed.timeline, options).toContain(landed);
+  const finished = reelsFeed.timeline
+    .slice(0, reelsFeed.timeline.indexOf(landed))
+    .flatMap((entry) => /^reel (\d+) started over$/.exec(entry)?.[1] ?? [])
+    .map(Number)
+    .filter((finished, i, all) => finished !== all[i - 1]);
+  expect(finished).toEqual([...Array(reel).keys()]);
+}
+
+/**
  * Resolves the first time `video` reports a position where `reached` holds,
  * so the test acts right then, not a poll later: a Reel lasts 2 to 3 seconds.
+ * Fails if it doesn't in the time `TWO_REELS` allows.
  */
 export function playedTo(video: HTMLVideoElement, reached: (video: HTMLVideoElement) => boolean) {
-  return new Promise<void>((resolve) => {
+  return new Promise<void>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      video.removeEventListener('timeupdate', check);
+      reject(new Error(`The video never got there; it is at ${video.currentTime}s of ${video.duration}s`));
+    }, TWO_REELS.timeout);
     const check = () => {
       if (!reached(video)) return;
+      clearTimeout(timer);
       video.removeEventListener('timeupdate', check);
       resolve();
     };
