@@ -53,7 +53,7 @@ describe('upgrade from 2.x', () => {
     expect(await fakeBrowser.storage.sync.get(['autoReelsStart', 'injectReelsButton'])).toEqual({});
   });
 
-  it('starts the viewer on the v3 defaults, like a new install', async () => {
+  it('starts the viewer on the v3 defaults, like a new install, when no v3 settings are saved yet', async () => {
     await upgrade();
 
     expect(await fakeBrowser.storage.sync.get()).toEqual({
@@ -75,6 +75,26 @@ describe('upgrade from 2.x', () => {
     await upgrade();
 
     expect(await openedPages()).toEqual([WELCOME]);
+  });
+
+  describe('on a device whose synced settings another device already upgraded', () => {
+    beforeEach(async () => {
+      // The viewer upgraded elsewhere first and changed a couple of settings.
+      await fakeBrowser.storage.sync.set({ autoScroll: false, preferredSpeed: 2 });
+    });
+
+    it('keeps the settings the viewer chose', async () => {
+      await upgrade();
+
+      expect(await createSettingsStore().get()).toMatchObject({ autoScroll: false, preferredSpeed: 2 });
+      expect(await fakeBrowser.storage.sync.get()).toEqual({ autoScroll: false, preferredSpeed: 2 });
+    });
+
+    it('still opens the Welcome Page once', async () => {
+      await upgrade();
+
+      expect(await openedPages()).toEqual([WELCOME]);
+    });
   });
 });
 

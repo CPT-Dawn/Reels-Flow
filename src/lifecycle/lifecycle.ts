@@ -1,6 +1,6 @@
 import { browser } from 'wxt/browser';
 import { storage } from 'wxt/utils/storage';
-import { createSettingsStore, DEFAULT_SETTINGS } from '@/settings/settings';
+import { createSettingsStore, DEFAULT_SETTINGS, hasSavedSettings } from '@/settings/settings';
 import { createWhatsNew } from '@/lifecycle/whats-new';
 import { GOODBYE_PAGE, WELCOME_PAGE } from '@/site';
 
@@ -31,11 +31,15 @@ export function startLifecycle(): void {
 
 /**
  * Everyone coming from 2.x starts afresh, as if newly installed: 2.x had
- * Auto-Scroll and its button off by default, which hid what v3 does.
+ * Auto-Scroll and its button off by default, which hid what v3 does. A
+ * device upgrading after another synced one keeps what the viewer has
+ * chosen there since.
  */
 async function upgradeFromV2() {
   await storage.removeItems([...LEGACY_KEYS]);
-  await createSettingsStore().set(DEFAULT_SETTINGS);
+  if (!(await hasSavedSettings())) {
+    await createSettingsStore().set(DEFAULT_SETTINGS);
+  }
   await openWelcomePage();
 }
 
