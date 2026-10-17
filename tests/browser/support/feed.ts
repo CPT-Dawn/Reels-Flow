@@ -1,4 +1,4 @@
-import { describe, onTestFinished } from 'vitest';
+import { describe, expect, onTestFinished } from 'vitest';
 import { mountEngine } from '@/engine/engine';
 import type { SessionStore } from '@/settings/session';
 import type { SettingsStore } from '@/settings/settings';
@@ -39,6 +39,31 @@ export function describeEachFixture(body: (fixture: Fixture) => void) {
 export const TWO_REELS = { timeout: 10_000 };
 
 /**
+ * Waits for `reelsFeed`'s timeline to begin with `expected`. Only the start is
+ * compared: the Reels Feed plays on after the last thing a test looks for, and
+ * a short Reel can start over before a busy machine gets round to looking.
+ */
+export function expectTimeline(reelsFeed: ReelsFeed, expected: string[], options = TWO_REELS) {
+  return expect.poll(() => reelsFeed.timeline.slice(0, expected.length), options).toEqual(expected);
+}
+
+/**
+ * Resolves the first time `video` reports a position where `reached` holds,
+ * so the test acts right then, not a poll later: a Reel lasts 2 to 3 seconds.
+ */
+export function playedTo(video: HTMLVideoElement, reached: (video: HTMLVideoElement) => boolean) {
+  return new Promise<void>((resolve) => {
+    const check = () => {
+      if (!reached(video)) return;
+      video.removeEventListener('timeupdate', check);
+      resolve();
+    };
+    video.addEventListener('timeupdate', check);
+    check();
+  });
+}
+
+/**
  * Waits long enough for the Reels Feed to have started moving had Reels Flow
  * Advanced, which it does within a frame of a Reel finishing.
  */
@@ -64,6 +89,12 @@ export type ReelsFeed = {
    * `reel without a video in view` on a Reel Instagram hasn't loaded yet).
    */
   timeline: string[];
+  /**
+   * Resolves as soon as `entry` is on the timeline, before anything else
+   * happens on the page, so the test can step in at that very moment. Fails
+   * if it isn't there in the time `TWO_REELS` allows.
+   */
+  seen(entry: string): Promise<void>;
   /** Moves to `path` inside Instagram, without a page load. */
   navigate(path: string): void;
   /**
@@ -144,8 +175,8 @@ export async function mountReelsFeed(
   // the first Reel left in the page, the one being watched, back into view.
   videos()[0]?.scrollIntoView({ block: 'center', behavior: 'instant' });
   await nextFrames(window, 2);
-  const player = playLikeInstagram(window, videos());
   const recording = recordTimeline(window, videos);
+  const player = playLikeInstagram(window, videos(), recording.startedOver);
   const unmountEngine = mountEngine(window.document, { settings, session, getMessage, clock });
 
   let mounted = true;
@@ -169,6 +200,7 @@ export async function mountReelsFeed(
     session,
     clock,
     timeline: recording.timeline,
+    seen: recording.seen,
     navigate(path) {
       // How Instagram moves between its pages: no load, no event.
       window.history.pushState(null, '', path);
@@ -239,9 +271,14 @@ function popoverOf(panel: Element) {
  * have: plays the Current Reel (the one most in view) and pauses the rest.
  * Like Instagram (see ADR 0001), it loops a Reel without `loop`: the video
  * ends, fires `ended`, and is sought back to the start and played again.
- * Videos are muted so they may autoplay.
+ * Videos are muted so they may autoplay. Tells `startedOver` the moment it
+ * starts a video over.
  */
-function playLikeInstagram(window: FixtureWindow, videos: HTMLVideoElement[]) {
+function playLikeInstagram(
+  window: FixtureWindow,
+  videos: HTMLVideoElement[],
+  startedOver: (video: HTMLVideoElement) => void,
+) {
   const inView = new Map<HTMLVideoElement, number>();
   const observer = new window.IntersectionObserver(
     (entries) => {
@@ -266,6 +303,7 @@ function playLikeInstagram(window: FixtureWindow, videos: HTMLVideoElement[]) {
   const restart = (event: Event) => {
     const video = event.target as HTMLVideoElement;
     video.currentTime = 0;
+    startedOver(video);
     void video.play();
   };
 
@@ -288,6 +326,16 @@ function playLikeInstagram(window: FixtureWindow, videos: HTMLVideoElement[]) {
 /** Writes down what the viewer sees happen, for `ReelsFeed.timeline`. */
 function recordTimeline(window: FixtureWindow, videos: () => HTMLVideoElement[]) {
   const timeline: string[] = [];
+  const waiting: { entry: string; resolve: () => void }[] = [];
+  const push = (entry: string) => {
+    timeline.push(entry);
+    for (const waiter of waiting.filter((waiter) => waiter.entry === entry)) {
+      waiting.splice(waiting.indexOf(waiter), 1);
+      waiter.resolve();
+    }
+  };
+  // Videos the player has just started over, whose seek is yet to report.
+  const announced = new WeakSet<HTMLVideoElement>();
   let scrolling = false;
 
   // Seeking, scrolling and scrollend don't bubble: listen as they go down.
@@ -296,13 +344,14 @@ function recordTimeline(window: FixtureWindow, videos: () => HTMLVideoElement[])
       'seeking',
       (event) => {
         const video = event.target as HTMLVideoElement;
-        if (video.currentTime < 0.5) timeline.push(`reel ${videos().indexOf(video)} started over`);
+        if (announced.delete(video)) return;
+        if (video.currentTime < 0.5) push(`reel ${videos().indexOf(video)} started over`);
       },
     ],
     [
       'scroll',
       () => {
-        if (!scrolling) timeline.push('Reels Feed scrolls');
+        if (!scrolling) push('Reels Feed scrolls');
         scrolling = true;
       },
     ],
@@ -311,7 +360,7 @@ function recordTimeline(window: FixtureWindow, videos: () => HTMLVideoElement[])
       () => {
         scrolling = false;
         const reel = reelInView(window, videos());
-        timeline.push(reel === -1 ? 'reel without a video in view' : `reel ${reel} in view`);
+        push(reel === -1 ? 'reel without a video in view' : `reel ${reel} in view`);
       },
     ],
   ];
@@ -321,6 +370,25 @@ function recordTimeline(window: FixtureWindow, videos: () => HTMLVideoElement[])
 
   return {
     timeline,
+    seen(entry: string) {
+      if (timeline.includes(entry)) return Promise.resolve();
+      return new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(
+          () => reject(new Error(`Never saw "${entry}", only ${JSON.stringify(timeline)}`)),
+          TWO_REELS.timeout,
+        );
+        waiting.push({ entry, resolve: () => (clearTimeout(timer), resolve()) });
+      });
+    },
+    /**
+     * Writes down a start over the player makes, as it makes it. Its seek
+     * reports a moment later, after an Advance begun at the end may already
+     * have scrolled the Reels Feed: the viewer saw both at once.
+     */
+    startedOver(video: HTMLVideoElement) {
+      announced.add(video);
+      push(`reel ${videos().indexOf(video)} started over`);
+    },
     stop() {
       for (const [type, listener] of listeners) {
         window.document.removeEventListener(type, listener, true);

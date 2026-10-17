@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { aMomentLater, describeEachFixture, mountReelsFeed, TWO_REELS, type ReelsFeed } from './support/feed';
+import { aMomentLater, describeEachFixture, expectTimeline, mountReelsFeed, TWO_REELS, type ReelsFeed } from './support/feed';
 import { createTestSettingsStore } from './support/settings';
 
 /** The Speed badge's text on the Reels Feed, or undefined while none shows. */
@@ -98,13 +98,13 @@ describeEachFixture((fixture) => {
     // Two Reels at half speed take twice as long to play out.
     const playOut = { timeout: TWO_REELS.timeout / Math.min(speed, 1) };
 
-    await expect.poll(() => reelsFeed.timeline, playOut).toEqual([
+    await expectTimeline(reelsFeed, [
       'reel 0 started over',
       'Reels Feed scrolls',
       'reel 1 in view',
       'reel 1 started over',
       'Reels Feed scrolls',
       'reel 2 in view',
-    ]);
+    ], playOut);
   }, 30_000);
 });

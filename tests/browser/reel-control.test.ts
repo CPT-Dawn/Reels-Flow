@@ -47,6 +47,14 @@ function flattenReelsFeed({ window, videos }: ReelsFeed) {
   reelsFeed.style.overflowY = 'visible';
 }
 
+/**
+ * How many Reel Controls lie over each video, top to bottom: each in place
+ * only once the Reel Controls have caught up with the page, a frame or more on.
+ */
+function controlsOverEachVideo(reelsFeed: ReelsFeed) {
+  return reelsFeed.videos.map((video) => controlsOver(reelsFeed, video).length);
+}
+
 /** The boxes of the Reel Controls lying entirely over `video`. */
 function controlsOver(reelsFeed: ReelsFeed, video: HTMLVideoElement) {
   const videoBox = video.getBoundingClientRect();
@@ -141,8 +149,8 @@ describeEachFixture((fixture) => {
 
     removeActionButtons(reelsFeed);
 
-    await expect.poll(() => reelControls(reelsFeed).length).toBe(reelsFeed.videos.length);
-    for (const video of reelsFeed.videos) expect(controlsOver(reelsFeed, video)).toHaveLength(1);
+    await expect.poll(() => controlsOverEachVideo(reelsFeed)).toEqual(reelsFeed.videos.map(() => 1));
+    expect(reelControls(reelsFeed)).toHaveLength(reelsFeed.videos.length);
     const button = reelControls(reelsFeed).find((button) => {
       const box = button.getBoundingClientRect();
       return box.bottom > 0 && box.top < reelsFeed.window.innerHeight;
@@ -268,7 +276,7 @@ describeEachFixture((fixture) => {
     flattenReelsFeed(reelsFeed);
     removeActionButtons(reelsFeed);
 
-    await expect.poll(() => reelControls(reelsFeed).length).toBe(reelsFeed.videos.length);
-    for (const video of reelsFeed.videos) expect(controlsOver(reelsFeed, video)).toHaveLength(1);
+    await expect.poll(() => controlsOverEachVideo(reelsFeed)).toEqual(reelsFeed.videos.map(() => 1));
+    expect(reelControls(reelsFeed)).toHaveLength(reelsFeed.videos.length);
   });
 });

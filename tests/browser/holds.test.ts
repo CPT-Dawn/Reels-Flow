@@ -2,7 +2,9 @@ import { expect, it } from 'vitest';
 import {
   aMomentLater,
   describeEachFixture,
+  expectTimeline,
   mountReelsFeed,
+  playedTo,
   TWO_REELS,
   type ReelsFeed,
 } from './support/feed';
@@ -85,7 +87,7 @@ describeEachFixture((fixture) => {
     for (const [, scrollByHand] of scrollsByHand) scrollByHand(reelsFeed);
     reelsFeed.clock.advance(SCROLL_HOLD);
 
-    await expect.poll(() => reelsFeed.timeline, TWO_REELS).toEqual([
+    await expectTimeline(reelsFeed, [
       'reel 0 started over',
       'Reels Feed scrolls',
       'reel 1 in view',
@@ -95,7 +97,7 @@ describeEachFixture((fixture) => {
   it('Holds a paused Reel taken to its end, and Advances at its next end once the viewer resumes it', async () => {
     const reelsFeed = await mountReelsFeed(fixture);
     const video = reelsFeed.videos[0]!;
-    await expect.poll(() => video.currentTime / video.duration, TWO_REELS).toBeGreaterThan(0.5);
+    await playedTo(video, () => video.currentTime / video.duration > 0.5);
 
     video.pause();
     await aMomentLater();
@@ -105,7 +107,7 @@ describeEachFixture((fixture) => {
     expect(reelsFeed.timeline).not.toContain('Reels Feed scrolls');
     void video.play();
 
-    await expect.poll(() => reelsFeed.timeline, TWO_REELS).toEqual(HELD_ONCE);
+    await expectTimeline(reelsFeed, HELD_ONCE);
   });
 
   it('Advances as usual in a background tab', async () => {
@@ -128,13 +130,13 @@ describeEachFixture((fixture) => {
   it('Advances as usual from a Reel the viewer paused mid-way and then resumed', async () => {
     const reelsFeed = await mountReelsFeed(fixture);
     const video = reelsFeed.videos[0]!;
-    await expect.poll(() => video.currentTime / video.duration, TWO_REELS).toBeGreaterThan(0.3);
+    await playedTo(video, () => video.currentTime / video.duration > 0.3);
 
     video.pause();
     await aMomentLater();
     void video.play();
 
-    await expect.poll(() => reelsFeed.timeline, TWO_REELS).toEqual([
+    await expectTimeline(reelsFeed, [
       'reel 0 started over',
       'Reels Feed scrolls',
       'reel 1 in view',
@@ -147,12 +149,14 @@ describeEachFixture((fixture) => {
  * then `release`s the Hold and expects an Advance at the Reel's next end.
  */
 async function expectHeldUntil(reelsFeed: ReelsFeed, release: () => void) {
-  await expect.poll(() => reelsFeed.timeline, TWO_REELS).toEqual(['reel 0 started over']);
-  await aMomentLater();
+  // Released the moment the Reel starts over, long before its next end
+  // however busy the machine. Had it not been held, the Reels Feed would
+  // already be on its way to the next Reel, and HELD_ONCE would not match.
+  await reelsFeed.seen('reel 0 started over');
   expect(reelsFeed.timeline).toEqual(['reel 0 started over']);
   release();
 
-  await expect.poll(() => reelsFeed.timeline, TWO_REELS).toEqual(HELD_ONCE);
+  await expectTimeline(reelsFeed, HELD_ONCE);
 }
 
 function textField(document: Document, html: string) {
