@@ -1,4 +1,5 @@
-import { SESSION_GAP, sessionAt, type Session, type SessionStore } from '@/settings/session';
+import { limitReached, SESSION_GAP, sessionAt, type Session, type SessionStore } from '@/settings/session';
+import type { SessionLimit } from '@/settings/settings';
 import type { Clock } from './engine';
 import { currentReelVideo } from './reels-feed';
 
@@ -27,6 +28,26 @@ type Unsaved = Pick<Session, 'reelsWatched' | 'playingMs'> & {
   lastWatchingAt?: number;
 };
 
+export type SessionLimitWatch = {
+  /** The Session Limit as the settings stand now; undefined until they arrive. */
+  limit(): SessionLimit | undefined;
+  /**
+   * Called once, while a Reel plays, when the Session reaches its limit:
+   * the Break Nudge's cue. Not again until `rearm()`.
+   */
+  onLimitReached(): void;
+};
+
+export type SessionTracker = {
+  /**
+   * Counts the Session Limit afresh from the Session as it stands now, for
+   * every tab: the next `onLimitReached` comes after another full limit.
+   */
+  rearm(): void;
+  /** Stops tracking, storing what hasn't been yet. */
+  stop(): void;
+};
+
 /**
  * The Session tracker, while the page is on the Reels Feed.
  *
@@ -37,10 +58,16 @@ type Unsaved = Pick<Session, 'reelsWatched' | 'playingMs'> & {
  *
  * A Reel counts as watched once it has been the Current Reel for
  * `COUNT_AFTER` while the Reels Feed is in front of the viewer or playing,
- * however it got there; minutes count while a Reel plays. Returns a function
- * that stops tracking.
+ * however it got there; minutes count while a Reel plays. Calls
+ * `onLimitReached` once the Session, in every tab together, reaches the
+ * Session Limit.
  */
-export function trackSession(document: Document, clock: Clock, session: SessionStore): () => void {
+export function trackSession(
+  document: Document,
+  clock: Clock,
+  session: SessionStore,
+  { limit, onLimitReached }: SessionLimitWatch,
+): SessionTracker {
   // Reels counted this Session, so a Reel that loops, or that the viewer
   // comes back to from another tab, counts once.
   let counted = new WeakSet<HTMLVideoElement>();
@@ -52,21 +79,54 @@ export function trackSession(document: Document, clock: Clock, session: SessionS
   let lastWatchingAt: number | undefined;
   let savedAt = -Infinity;
   let unsaved: Unsaved = { reelsWatched: 0, playingMs: 0 };
+  // The Session as last stored, by this page or another, with what this page
+  // has asked to store since applied; undefined until read.
+  let stored: Session | undefined;
+  // Whether the Break Nudge's cue has come since the Session Limit was last armed.
+  let limitCueGiven = false;
 
-  const save = () => {
+  const unwatchStored = session.watch((changed) => {
+    stored = changed;
+  });
+  void session.get().then((read) => {
+    stored ??= read;
+  });
+
+  /** The Session as it stands now, with what this page hasn't stored yet. */
+  const live = (): Session | undefined => {
+    if (!stored) return undefined;
+    const current = sessionAt(stored, unsaved.firstWatchingAt ?? clock.now());
+    return {
+      ...current,
+      reelsWatched: current.reelsWatched + unsaved.reelsWatched,
+      playingMs: current.playingMs + unsaved.playingMs,
+    };
+  };
+
+  /**
+   * Stores what this page has seen since it last did, and, given `limitFrom`,
+   * where the Session Limit counts from now. Resolves once stored.
+   */
+  const save = (limitFrom?: Session['limitFrom']) => {
     const { firstWatchingAt, lastWatchingAt, reelsWatched, playingMs } = unsaved;
     unsaved = { reelsWatched: 0, playingMs: 0 };
     savedAt = clock.now();
-    if (firstWatchingAt === undefined || lastWatchingAt === undefined) return;
-    void session.update((stored) => {
+    const seen = firstWatchingAt !== undefined && lastWatchingAt !== undefined;
+    if (!seen && !limitFrom) return Promise.resolve();
+    const change = (stored: Session): Session => {
       // A new Session if the viewer hadn't watched, in any tab, for long enough.
-      const current = sessionAt(stored, firstWatchingAt);
+      const current = seen ? sessionAt(stored, firstWatchingAt) : stored;
       return {
+        ...current,
         reelsWatched: current.reelsWatched + reelsWatched,
         playingMs: current.playingMs + playingMs,
-        lastSeenAt: Math.max(current.lastSeenAt, lastWatchingAt),
+        lastSeenAt: seen ? Math.max(current.lastSeenAt, lastWatchingAt) : current.lastSeenAt,
+        ...(limitFrom && { limitFrom }),
       };
-    });
+    };
+    // Counted at once, for the Session Limit, before the store says it's done.
+    if (stored) stored = change(stored);
+    return session.update(change).catch(() => {});
   };
 
   const watched = (at: number) => {
@@ -102,16 +162,24 @@ export function trackSession(document: Document, clock: Clock, session: SessionS
         counted.add(reel);
         unsaved.reelsWatched++;
         watched(now);
-        save();
+        void save();
       }
     } else {
       // Gone to another tab: a Reel must be in view a while once they're back.
       currentReel = undefined;
     }
 
+    // The Break Nudge's cue: only while a Reel plays, for it to pause.
+    const sessionNow = live();
+    const sessionLimit = limit();
+    if (playing && !limitCueGiven && sessionNow && sessionLimit && limitReached(sessionNow, sessionLimit)) {
+      limitCueGiven = true;
+      onLimitReached();
+    }
+
     // Stopped watching: store when, for the Session's end to count from.
-    if (wasPlaying && !playing) save();
-    else if (now - savedAt >= SAVE_EVERY) save();
+    if (wasPlaying && !playing) void save();
+    else if (now - savedAt >= SAVE_EVERY) void save();
     wasPlaying = playing;
     timer = clock.setTimeout(tick, TICK);
   };
@@ -119,12 +187,23 @@ export function trackSession(document: Document, clock: Clock, session: SessionS
   // Closing the tab: store what hasn't been yet, as far as the browser lets
   // a closing page finish.
   const window = document.defaultView!;
-  window.addEventListener('pagehide', save);
+  const onPageHide = () => void save();
+  window.addEventListener('pagehide', onPageHide);
 
-  return () => {
-    clock.clearTimeout(timer);
-    window.removeEventListener('pagehide', save);
-    save();
+  return {
+    rearm() {
+      const from = live();
+      if (!from) return;
+      void save({ reelsWatched: from.reelsWatched, playingMs: from.playingMs }).then(() => {
+        limitCueGiven = false;
+      });
+    },
+    stop() {
+      clock.clearTimeout(timer);
+      window.removeEventListener('pagehide', onPageHide);
+      unwatchStored();
+      void save();
+    },
   };
 }
 

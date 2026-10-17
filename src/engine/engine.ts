@@ -1,5 +1,6 @@
 import type { SessionStore } from '@/settings/session';
 import type { Settings, SettingsStore } from '@/settings/settings';
+import { createBreakNudge } from './break-nudge';
 import { watchHolds } from './holds';
 import { placeReelControls, type ReelControls } from './reel-control';
 import { watchReelEnds } from './reel-end';
@@ -23,7 +24,14 @@ export interface Clock {
 
 /** The browser's localised strings the engine shows on the Reels Feed (public/_locales). */
 export type GetMessage = (
-  name: 'reelControlName' | 'reelControlLabel' | 'reelControlTitle',
+  name:
+    | 'reelControlName'
+    | 'reelControlLabel'
+    | 'reelControlTitle'
+    | 'breakNudgeTitle'
+    | 'breakNudgeText'
+    | 'breakNudgeKeepWatching'
+    | 'breakNudgeDone',
   substitution?: string,
 ) => string;
 
@@ -97,9 +105,23 @@ export function mountEngine(
       reelControls.update(current);
       speed.update(current);
     }
-    const stopTrackingSession = trackSession(document, clock, session);
+    const breakNudge = createBreakNudge(document, getMessage);
+    const sessionTracker = trackSession(document, clock, session, {
+      limit: () => current?.sessionLimit,
+      // The Break Nudge: the Current Reel pauses until the viewer answers.
+      onLimitReached() {
+        const video = currentReelVideo(document);
+        video?.pause();
+        breakNudge.show((choice) => {
+          sessionTracker.rearm();
+          if (choice === 'keepWatching') void video?.play().catch(() => {});
+          else void settings.set({ autoScroll: false });
+        });
+      },
+    });
     return () => {
-      stopTrackingSession();
+      breakNudge.remove();
+      sessionTracker.stop();
       speed!.stop();
       speed = undefined;
       unwatchEnds();

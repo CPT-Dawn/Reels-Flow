@@ -148,6 +148,47 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* A setting with its own inputs: the row itself isn't one to press. */
+.rf-limit {
+  cursor: default;
+}
+
+.rf-limit:hover {
+  background: none;
+}
+
+.rf-limit-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rf-select,
+.rf-number {
+  box-sizing: border-box;
+  height: 32px;
+  margin: 0;
+  padding: 0 8px;
+  border: 1px solid var(--ig-separator);
+  border-radius: 8px;
+  background: var(--ig-secondary-background);
+  color: var(--ig-primary-text);
+  font: inherit;
+}
+
+.rf-select {
+  cursor: pointer;
+}
+
+.rf-number {
+  width: 64px;
+  font-variant-numeric: tabular-nums;
+}
+
+.rf-select:disabled {
+  opacity: 0.4;
+}
+
 /* A native checkbox drawn as Instagram's switch, so it keeps its keyboard
    and screen reader behaviour. */
 .rf-switch {
