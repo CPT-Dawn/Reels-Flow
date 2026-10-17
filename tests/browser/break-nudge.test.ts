@@ -119,7 +119,7 @@ describeEachFixture((fixture) => {
     expect(isDark(background)).toBe(instagramIsDark);
   });
 
-  for (const key of ['Enter', ' ']) {
+  for (const key of ['Enter', ' ', 'Escape']) {
     it(`resumes the Reel with Auto-Scroll on when the viewer presses ${key === ' ' ? 'Space' : key}`, async () => {
       const reelsFeed = await nudged(
         await mount({ kind: 'reels', value: 1 }, { settings: createTestSettingsStore({ autoScroll: true, sessionLimit: { kind: 'reels', value: 1 } }) }),
@@ -143,6 +143,15 @@ describeEachFixture((fixture) => {
     await expect.poll(() => breakNudge(reelsFeed)).toBeUndefined();
     await expect.poll(() => reelsFeed.videos[0]!.paused).toBe(false);
     expect((await reelsFeed.settings.get()).autoScroll).toBe(true);
+  });
+
+  it('leaves Auto-Scroll off on Keep watching when it was off', async () => {
+    const reelsFeed = await nudged(await mount({ kind: 'reels', value: 1 }));
+
+    choose(reelsFeed, 'Keep watching');
+
+    await expect.poll(() => reelsFeed.videos[0]!.paused).toBe(false);
+    expect((await reelsFeed.settings.get()).autoScroll).toBe(false);
   });
 
   it("turns Auto-Scroll off and leaves the Reel paused when the viewer chooses I'm done", async () => {
@@ -171,6 +180,24 @@ describeEachFixture((fixture) => {
     expect(breakNudge(reelsFeed)).toBeUndefined();
     scrollTo(reelsFeed, 2);
     // The Break Nudge comes while a Reel plays, for it to pause.
+    await reelPlays(reelsFeed, 2);
+    reelsFeed.clock.advance(OVER_A_SECOND);
+
+    await expect.poll(() => breakNudge(reelsFeed)).toBeDefined();
+  });
+
+  it("nudges again only after another full limit once the viewer chose I'm done", async () => {
+    const reelsFeed = await nudged(await mount({ kind: 'reels', value: 2 }, { session: createTestSessionStore({ reelsWatched: 1 }) }));
+    choose(reelsFeed, "I'm done");
+    await expect.poll(() => breakNudge(reelsFeed)).toBeUndefined();
+
+    scrollTo(reelsFeed, 1);
+    await reelPlays(reelsFeed, 1);
+    reelsFeed.clock.advance(OVER_A_SECOND);
+    await expect.poll(() => reelsWatched(reelsFeed)).toBe(3);
+    await aMomentLater();
+    expect(breakNudge(reelsFeed)).toBeUndefined();
+    scrollTo(reelsFeed, 2);
     await reelPlays(reelsFeed, 2);
     reelsFeed.clock.advance(OVER_A_SECOND);
 
