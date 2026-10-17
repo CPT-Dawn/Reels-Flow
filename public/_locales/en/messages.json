@@ -37,7 +37,7 @@
   },
   "popupSessionLimit": {
     "message": "Session limit",
-    "description": "Popup label of the optional Session Limit: a break nudge after a number of Reels or minutes in one Session, one continuous stretch of watching Instagram Reels."
+    "description": "Popup label of the optional Session Limit: a Break Nudge after a number of Reels or minutes in one Session, one continuous stretch of watching Instagram Reels."
   },
   "popupSessionLimitOff": {
     "message": "Off",

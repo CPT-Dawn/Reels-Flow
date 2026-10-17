@@ -92,8 +92,8 @@ describeEachFixture((fixture) => {
     const reelsFeed = await nudged(await mount({ kind: 'reels', value: 1 }));
     const { dialog } = breakNudge(reelsFeed)!;
 
-    expect(dialog.getAttribute('role') ?? 'dialog').toBe('dialog');
-    expect(dialog.getAttribute('aria-modal') ?? String(dialog.matches(':modal'))).toBe('true');
+    expect(dialog.tagName).toBe('DIALOG');
+    expect(dialog.matches(':modal')).toBe(true);
     const root = dialog.getRootNode() as ShadowRoot;
     expect(root.getElementById(dialog.getAttribute('aria-labelledby')!)?.textContent).toBeTruthy();
     expect(root.getElementById(dialog.getAttribute('aria-describedby')!)?.textContent).toBeTruthy();
@@ -138,7 +138,7 @@ describeEachFixture((fixture) => {
       await mount({ kind: 'reels', value: 1 }, { settings: createTestSettingsStore({ autoScroll: true, sessionLimit: { kind: 'reels', value: 1 } }) }),
     );
 
-    breakNudge(reelsFeed)!.buttons[0]!.click();
+    choose(reelsFeed, 'Keep watching');
 
     await expect.poll(() => breakNudge(reelsFeed)).toBeUndefined();
     await expect.poll(() => reelsFeed.videos[0]!.paused).toBe(false);
@@ -150,7 +150,7 @@ describeEachFixture((fixture) => {
       await mount({ kind: 'reels', value: 1 }, { settings: createTestSettingsStore({ autoScroll: true, sessionLimit: { kind: 'reels', value: 1 } }) }),
     );
 
-    breakNudge(reelsFeed)!.buttons[1]!.click();
+    choose(reelsFeed, "I'm done");
 
     await expect.poll(() => breakNudge(reelsFeed)).toBeUndefined();
     await expect.poll(async () => (await reelsFeed.settings.get()).autoScroll).toBe(false);
@@ -160,7 +160,7 @@ describeEachFixture((fixture) => {
 
   it('nudges again only after another full limit in Reels', async () => {
     const reelsFeed = await nudged(await mount({ kind: 'reels', value: 2 }, { session: createTestSessionStore({ reelsWatched: 1 }) }));
-    breakNudge(reelsFeed)!.buttons[0]!.click();
+    choose(reelsFeed, 'Keep watching');
     await expect.poll(() => breakNudge(reelsFeed)).toBeUndefined();
 
     scrollTo(reelsFeed, 1);
@@ -182,7 +182,7 @@ describeEachFixture((fixture) => {
     await reelPlays(reelsFeed);
     reelsFeed.clock.advance(10 * MINUTE + OVER_A_SECOND);
     await expect.poll(() => breakNudge(reelsFeed)).toBeDefined();
-    breakNudge(reelsFeed)!.buttons[0]!.click();
+    choose(reelsFeed, 'Keep watching');
     await reelPlays(reelsFeed);
 
     reelsFeed.clock.advance(9 * MINUTE);
@@ -214,10 +214,15 @@ async function nudged(reelsFeed: ReelsFeed) {
 /** The Break Nudge showing on the Reels Feed, or undefined while none does. */
 function breakNudge({ document }: ReelsFeed) {
   for (const host of document.querySelectorAll('*')) {
-    const dialog = host.shadowRoot?.querySelector<HTMLDialogElement>('dialog[open], [role="dialog"]');
+    const dialog = host.shadowRoot?.querySelector<HTMLDialogElement>('dialog[open]');
     if (dialog) return { dialog, buttons: [...dialog.querySelectorAll('button')] };
   }
   return undefined;
+}
+
+/** Clicks the Break Nudge's button named `name`. */
+function choose(reelsFeed: ReelsFeed, name: string) {
+  breakNudge(reelsFeed)!.buttons.find((button) => button.textContent === name)!.click();
 }
 
 /** The element the keyboard is on, inside shadow roots too. */

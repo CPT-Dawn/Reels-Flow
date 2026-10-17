@@ -25,8 +25,8 @@ export type PopupMessage =
 
 type LimitKind = SessionLimit['kind'];
 
-/** The Session Limit a kind starts at when the viewer picks it. */
-const LIMIT_STARTS_AT = { reels: 30, minutes: 30 };
+/** The Session Limit starts at this many Reels or minutes when the viewer picks a kind. */
+const LIMIT_STARTS_AT = 30;
 
 /** The largest Session Limit the Popup takes, in Reels or minutes. */
 const LIMIT_MAX = 999;
@@ -164,13 +164,13 @@ export function mountPopup(
   };
   limitKind.addEventListener('change', () => {
     const kind = limitKind.value as LimitKind;
-    setLimit(kind === 'off' ? { kind } : { kind, value: LIMIT_STARTS_AT[kind] });
+    setLimit(kind === 'off' ? { kind } : { kind, value: LIMIT_STARTS_AT });
   });
   limitValue.addEventListener('change', () => {
     const kind = limitKind.value as LimitKind;
     if (kind === 'off') return;
     const typed = Math.round(limitValue.valueAsNumber);
-    const value = Number.isNaN(typed) ? LIMIT_STARTS_AT[kind] : Math.min(Math.max(typed, 1), LIMIT_MAX);
+    const value = Number.isNaN(typed) ? LIMIT_STARTS_AT : Math.min(Math.max(typed, 1), LIMIT_MAX);
     setLimit({ kind, value });
   });
 
