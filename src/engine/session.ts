@@ -28,22 +28,27 @@ type Unsaved = Pick<Session, 'reelsWatched' | 'playingMs'> & {
 };
 
 /**
- * The Session tracker, while the page is on the Reels Feed. The viewer is
- * watching while the page is in front of them, or while a Reel plays in the
- * background. A Reel counts as watched once it has been the Current Reel for
- * `COUNT_AFTER` while they watch, however it got there; minutes count while a
- * Reel plays. Returns a function that stops tracking.
+ * The Session tracker, while the page is on the Reels Feed.
+ *
+ * The viewer is watching while a Reel plays, in front of them or in a
+ * background tab, and when a Reel they reached counts. A Session ends after
+ * `SESSION_GAP` without watching in any tab, whether they were away or the
+ * Reels Feed sat paused in front of them.
+ *
+ * A Reel counts as watched once it has been the Current Reel for
+ * `COUNT_AFTER` while the Reels Feed is in front of the viewer or playing,
+ * however it got there; minutes count while a Reel plays. Returns a function
+ * that stops tracking.
  */
 export function trackSession(document: Document, clock: Clock, session: SessionStore): () => void {
   // Reels counted this Session, so a Reel that loops, or that the viewer
   // comes back to from another tab, counts once.
   let counted = new WeakSet<HTMLVideoElement>();
-  // The Current Reel, and since when, while the viewer watches.
+  // The Current Reel, and since when, while the Reels Feed is in view.
   let currentReel: HTMLVideoElement | undefined;
   let currentSince = 0;
   let lastTick = clock.now();
   let wasPlaying = false;
-  let wasWatching = false;
   let lastWatchingAt: number | undefined;
   let savedAt = -Infinity;
   let unsaved: Unsaved = { reelsWatched: 0, playingMs: 0 };
@@ -54,7 +59,7 @@ export function trackSession(document: Document, clock: Clock, session: SessionS
     savedAt = clock.now();
     if (firstWatchingAt === undefined || lastWatchingAt === undefined) return;
     void session.update((stored) => {
-      // A new Session if the viewer had been away, in every tab, long enough.
+      // A new Session if the viewer hadn't watched, in any tab, for long enough.
       const current = sessionAt(stored, firstWatchingAt);
       return {
         reelsWatched: current.reelsWatched + reelsWatched,
@@ -64,25 +69,30 @@ export function trackSession(document: Document, clock: Clock, session: SessionS
     });
   };
 
+  const watched = (at: number) => {
+    lastWatchingAt = at;
+    unsaved.firstWatchingAt ??= at;
+    unsaved.lastWatchingAt = at;
+  };
+
   let timer: number;
   const tick = () => {
     const now = clock.now();
     const sinceLastTick = Math.min(Math.max(now - lastTick, 0), LONGEST_TICK);
     lastTick = now;
     const playing = aReelPlays(document);
-    const watching = playing || document.visibilityState === 'visible';
 
-    if (watching) {
-      // Back after long enough away that, as far as this page knows, the
+    if (playing) {
+      // Playing again after long enough that, as far as this page knows, the
       // Session has ended: the Reels it counted count again.
       if (lastWatchingAt !== undefined && now - lastWatchingAt >= SESSION_GAP) counted = new WeakSet();
-      lastWatchingAt = now;
-      unsaved.firstWatchingAt ??= now;
-      unsaved.lastWatchingAt = now;
+      watched(now);
       // Only time a Reel played all through: one that has just started, or
       // just stopped, may not have played for most of it.
-      if (playing && wasPlaying) unsaved.playingMs += sinceLastTick;
+      if (wasPlaying) unsaved.playingMs += sinceLastTick;
+    }
 
+    if (playing || document.visibilityState === 'visible') {
       const reel = currentReelVideo(document);
       if (reel !== currentReel) {
         currentReel = reel;
@@ -91,17 +101,18 @@ export function trackSession(document: Document, clock: Clock, session: SessionS
       if (reel && !counted.has(reel) && now - currentSince >= COUNT_AFTER) {
         counted.add(reel);
         unsaved.reelsWatched++;
-        save();
-      } else if (now - savedAt >= SAVE_EVERY) {
+        watched(now);
         save();
       }
-    } else if (wasWatching) {
+    } else {
       // Gone to another tab: a Reel must be in view a while once they're back.
       currentReel = undefined;
-      save();
     }
+
+    // Stopped watching: store when, for the Session's end to count from.
+    if (wasPlaying && !playing) save();
+    else if (now - savedAt >= SAVE_EVERY) save();
     wasPlaying = playing;
-    wasWatching = watching;
     timer = clock.setTimeout(tick, TICK);
   };
   tick();

@@ -1,13 +1,19 @@
 import { storage } from 'wxt/utils/storage';
 
-/** How long away from the Reels Feed ends a Session, in ms. */
+/**
+ * How long with no Reel playing ends a Session, in ms: away from the Reels
+ * Feed, or with it paused in front of the viewer.
+ */
 export const SESSION_GAP = 30 * 60_000;
 
 export type Session = {
   reelsWatched: number;
   /** How long Reels have played on the Reels Feed this Session, in ms. */
   playingMs: number;
-  /** When the viewer was last on the Reels Feed, in ms since the epoch; 0 if never. */
+  /**
+   * When the viewer was last watching, a Reel playing or just counted, in ms
+   * since the epoch; 0 if never.
+   */
   lastSeenAt: number;
 };
 
@@ -15,7 +21,7 @@ export const NO_SESSION: Session = { reelsWatched: 0, playingMs: 0, lastSeenAt: 
 
 /**
  * The Session as it stands at `now`, from the one last stored: a new, empty
- * one once the viewer has been away from the Reels Feed for `SESSION_GAP`.
+ * one once the viewer hasn't watched for `SESSION_GAP`.
  */
 export function sessionAt(stored: Session, now: number): Session {
   return now - stored.lastSeenAt >= SESSION_GAP ? NO_SESSION : stored;

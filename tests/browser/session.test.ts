@@ -124,6 +124,32 @@ describeEachFixture((fixture) => {
     await expect.poll(() => session(reelsFeed)).toEqual({ reelsWatched: 1, playingMinutes: 0 });
   });
 
+  it('keeps the Session going while the Reels Feed is in front of the viewer, paused, for under 30 minutes', async () => {
+    const reelsFeed = await watchAReelForTenMinutes(await mount());
+    const video = reelsFeed.videos[0]!;
+
+    video.pause();
+    reelsFeed.clock.advance(SESSION_GAP - MINUTE);
+    void video.play();
+    scrollTo(reelsFeed, 1);
+    reelsFeed.clock.advance(OVER_A_SECOND);
+
+    await expect.poll(() => session(reelsFeed)).toEqual({ reelsWatched: 2, playingMinutes: 10 });
+  });
+
+  it('starts a new Session once the Reels Feed has been in front of the viewer, paused, for 30 minutes', async () => {
+    const reelsFeed = await watchAReelForTenMinutes(await mount());
+    const video = reelsFeed.videos[0]!;
+
+    video.pause();
+    reelsFeed.clock.advance(SESSION_GAP);
+    void video.play();
+    reelsFeed.clock.advance(OVER_A_SECOND);
+
+    // The Reel they play again is the new Session's first.
+    await expect.poll(() => session(reelsFeed)).toEqual({ reelsWatched: 1, playingMinutes: 0 });
+  });
+
   it('keeps the Session going while the viewer is elsewhere on Instagram for under 30 minutes', async () => {
     const reelsFeed = await watchAReelForTenMinutes(await mount());
 
@@ -153,6 +179,7 @@ describeEachFixture((fixture) => {
     const shared = { session: createTestSessionStore(), clock };
     const tabA = await mount(shared);
     const tabB = await mount(shared);
+    await reelPlays(tabB);
     clock.advance(OVER_A_SECOND);
     await expect.poll(() => reelsWatched(tabA)).toBe(2);
 
