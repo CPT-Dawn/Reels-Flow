@@ -14,7 +14,7 @@ Run before every release, on real Instagram (logged in, instagram.com/reels/), o
 Load the built package (`.output/chrome-mv3`, `.output/edge-mv3`, or the Firefox zip through `about:debugging` → Load Temporary Add-on).
 
 5. The toolbar and the extensions page show the new Reels Flow icon (not the Instagram glyph) and the name "Reels Flow".
-6. A fresh install opens the Welcome page on reelsflow.cptdawn.dev once. Updating from the store version opens nothing; the Popup's What's new link shows a dot until opened.
+6. A fresh install opens the Welcome Page on reelsflow.cptdawn.dev once, and so does an upgrade from the 2.x store version. A later 3.x update opens nothing; the Popup's What's new link shows a dot until opened.
 
 ## Reels Feed
 
