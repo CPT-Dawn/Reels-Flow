@@ -1,3 +1,5 @@
 # One TypeScript codebase built with WXT for every browser
 
 v3 is a full rewrite in TypeScript using the WXT framework, producing the Chrome Web Store, Edge Add-ons and Firefox builds from one source. The browsers differ in manifest details (Firefox needs an add-on ID, its data-collection declaration, and background scripts instead of a service worker), and WXT handles those differences, the Firefox source bundle and the dev reload loop. We chose it over staying with plain JavaScript (hand-maintained manifests per browser) and over Plasmo (only partly maintained). Moving off WXT later would mean redoing the build and the browser-specific packaging.
+
+_Narrowed by [ADR 0005](0005-chrome-web-store-and-firefox-add-ons-only.md): there is no separate Edge Add-ons build; Edge runs the Chrome Web Store build._

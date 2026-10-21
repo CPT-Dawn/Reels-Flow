@@ -1,6 +1,7 @@
 import { defineConfig } from 'wxt';
 
-// See ADR 0004: one codebase builds the Chrome, Edge and Firefox packages.
+// See ADR 0004: one codebase builds the Chrome and Firefox packages. Edge and
+// other Chromium browsers install the Chrome one (ADR 0005).
 export default defineConfig({
   srcDir: 'src',
   manifestVersion: 3,

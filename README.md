@@ -23,15 +23,17 @@ Website: [reelsflow.cptdawn.dev](https://reelsflow.cptdawn.dev)
 - **Auto-Scroll**: moves to the next Reel when the current one ends. It holds back while you're in charge: the Reel is paused, the comments or a menu are open, you're typing, or you just scrolled by hand.
 - **Reel Control**: an Auto-Scroll button beside each Reel, among Instagram's own buttons.
 - **Speed**: play every Reel at your Preferred Speed (0.5×–3×), switched on or off from the Popup or a Shortcut.
-- **Shortcuts**: single keys on the Reels feed, never while you type. Defaults: `A` Auto-Scroll, `S` Speed, `↓` next Reel, `↑` previous Reel. Change them on the Settings Page.
+- **Shortcuts**: single keys on the Reels feed, never while you type. Defaults: `A` Auto-Scroll, `S` Speed. Change them in the Popup. Instagram's own `↑` and `↓` move between Reels.
+- **One Popup for everything**: every setting lives in the toolbar Popup; there is no separate settings page.
 - **Reels watched**: the toolbar Popup counts the Reels you've seen this session.
 - **Session Limit and Break Nudge**: optionally set a limit in Reels or minutes; when you reach it, the Reel pauses and a calm notice asks if you'd like a break. Off unless you set it.
 
 ## Browsers
 
-- [Chrome Web Store](https://chromewebstore.google.com/detail/reels-flow-auto-scroll-fo/mlmllpiifbmfnopepamjhbdedfjajgcl) (also works in Brave and other Chromium browsers)
-- Microsoft Edge Add-ons
-- Firefox Add-ons (Firefox 142 or later)
+- **Chrome, Edge, Brave, Opera, Vivaldi and other Chromium browsers**: install from the [Chrome Web Store](https://chromewebstore.google.com/detail/reels-flow-auto-scroll-fo/mlmllpiifbmfnopepamjhbdedfjajgcl). In Edge, allow extensions from other stores when it asks.
+- **Firefox 142 or later**: install from Firefox Add-ons (addons.mozilla.org).
+
+Reels Flow is not listed on Microsoft Edge Add-ons; Edge runs the Chrome Web Store version. See [ADR 0005](docs/adr/0005-chrome-web-store-and-firefox-add-ons-only.md).
 
 ## Privacy
 
@@ -41,16 +43,16 @@ Found a problem? Use **Report a problem** in the Popup, or visit [reelsflow.cptd
 
 ## Building from source
 
-Needs Node.js and pnpm.
+Needs Bun (and Node.js, which WXT and Vitest run on).
 
 ```sh
-pnpm install
-pnpm typecheck
-pnpm test
-pnpm zip   # Chrome, Edge and Firefox packages, plus the Firefox source bundle, in .output/
+bun install
+bun run typecheck
+bun run test
+bun run zip   # Chrome and Firefox packages, plus the Firefox source bundle, in .output/
 ```
 
-`pnpm dev` (Chrome) and `pnpm dev:firefox` run a development build. Before a release, run the [release checklist](docs/release/checklist.md).
+`bun run dev` (Chrome) and `bun run dev:firefox` run a development build. Before a release, run the [release checklist](docs/release/checklist.md).
 
 ## License
 
