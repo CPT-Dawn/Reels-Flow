@@ -1,10 +1,7 @@
 import { storage } from 'wxt/utils/storage';
 
-export type ShortcutAction =
-  | 'toggleAutoScroll'
-  | 'toggleSpeed'
-  | 'nextReel'
-  | 'previousReel';
+// Instagram's own Up and Down keys already move between Reels.
+export type ShortcutAction = 'toggleAutoScroll' | 'toggleSpeed';
 
 /** A Shortcut binding is a `KeyboardEvent.key` value. */
 export type Shortcuts = Record<ShortcutAction, string>;
@@ -31,8 +28,6 @@ export const DEFAULT_SETTINGS: Settings = {
   shortcuts: {
     toggleAutoScroll: 'a',
     toggleSpeed: 's',
-    nextReel: 'ArrowDown',
-    previousReel: 'ArrowUp',
   },
   sessionLimit: { kind: 'off' },
 };

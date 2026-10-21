@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { mountPopup, type PopupOptions } from '@/popup/popup';
-import type { SettingsStore } from '@/settings/settings';
+import { DEFAULT_SETTINGS, type Settings, type SettingsStore } from '@/settings/settings';
 import type { WhatsNew } from '@/lifecycle/whats-new';
 import { createTestSessionStore } from './support/session';
 import { createTestSettingsStore } from './support/settings';
@@ -10,6 +10,12 @@ import { createTestSettingsStore } from './support/settings';
 const messages: Record<string, { message: string }> = await (
   await fetch('/_locales/en/messages.json')
 ).json();
+
+/** `browser.i18n.getMessage`: fills in the message's placeholders in order. */
+const message = (key: string, substitutions: string[] = []) => {
+  let next = 0;
+  return messages[key]!.message.replace(/\$\w+\$/g, () => substitutions[next++] ?? '');
+};
 
 // When the Popup opens, in ms since the epoch.
 const NOW = Date.UTC(2026, 9, 17, 12);
@@ -25,12 +31,11 @@ afterEach(() => {
 
 function openPopup(options: Partial<PopupOptions> & { settings: SettingsStore }) {
   unmount = mountPopup(document, {
-    message: (key) => messages[key]!.message,
+    message,
     session: createTestSessionStore(),
     now: () => NOW,
     version: '3.0.0',
     browser: 'chrome',
-    openSettingsPage: () => {},
     whatsNew: whatsNewFlag(false),
     ...options,
   });
@@ -150,17 +155,6 @@ describe("What's new", () => {
   });
 });
 
-describe('Settings Page', () => {
-  it('opens from the Popup', async () => {
-    let opened = 0;
-    openPopup({ settings: createTestSettingsStore(), openSettingsPage: () => opened++ });
-
-    await page.getByRole('button', { name: 'Settings' }).click();
-
-    expect(opened).toBe(1);
-  });
-});
-
 describe('Speed switch', () => {
   it('switches Speed on everywhere, and follows it being switched off elsewhere', async () => {
     const settings = createTestSettingsStore({ speedOn: false });
@@ -204,12 +198,13 @@ describe('Reels Watched', () => {
 });
 
 describe('Session Limit', () => {
-  const kind = () => page.getByRole('combobox', { name: 'Session limit' });
+  const kind = (name: string) =>
+    page.getByRole('radiogroup', { name: 'Session limit' }).getByRole('radio', { name });
 
   it('is off by default', async () => {
     openPopup({ settings: createTestSettingsStore() });
 
-    await expect.element(kind()).toHaveValue('off');
+    await expect.element(kind('Off')).toBeChecked();
     await expect.element(page.getByRole('spinbutton')).not.toBeInTheDocument();
   });
 
@@ -217,7 +212,7 @@ describe('Session Limit', () => {
     const settings = createTestSettingsStore();
     openPopup({ settings });
 
-    await kind().selectOptions('Reels');
+    await kind('Reels').click();
     const reels = page.getByRole('spinbutton', { name: 'Reels before a break' });
     await reels.fill('40');
     await userEvent.tab();
@@ -229,7 +224,7 @@ describe('Session Limit', () => {
     const settings = createTestSettingsStore();
     openPopup({ settings });
 
-    await kind().selectOptions('Minutes');
+    await kind('Minutes').click();
     const minutes = page.getByRole('spinbutton', { name: 'Minutes before a break' });
     await minutes.fill('45');
     await userEvent.tab();
@@ -242,9 +237,53 @@ describe('Session Limit', () => {
     openPopup({ settings });
     await expect.element(page.getByRole('spinbutton', { name: 'Minutes before a break' })).toHaveValue(20);
 
-    await kind().selectOptions('Off');
+    await kind('Off').click();
 
     await expect.poll(async () => (await settings.get()).sessionLimit).toEqual({ kind: 'off' });
+    await expect.element(page.getByRole('spinbutton')).not.toBeInTheDocument();
+  });
+
+  it('steps the limit to the next multiple of five', async () => {
+    const settings = createTestSettingsStore({ sessionLimit: { kind: 'reels', value: 32 } });
+    openPopup({ settings });
+    const reels = page.getByRole('spinbutton', { name: 'Reels before a break' });
+    await expect.element(reels).toHaveValue(32);
+
+    await page.getByRole('button', { name: 'Raise the limit' }).click();
+    await expect.poll(async () => (await settings.get()).sessionLimit).toEqual({ kind: 'reels', value: 35 });
+
+    await page.getByRole('button', { name: 'Lower the limit' }).click();
+    await page.getByRole('button', { name: 'Lower the limit' }).click();
+    await expect.poll(async () => (await settings.get()).sessionLimit).toEqual({ kind: 'reels', value: 25 });
+    await expect.element(reels).toHaveValue(25);
+  });
+
+  it('never steps below one', async () => {
+    const settings = createTestSettingsStore({ sessionLimit: { kind: 'minutes', value: 3 } });
+    openPopup({ settings });
+    const lower = page.getByRole('button', { name: 'Lower the limit' });
+
+    await lower.click();
+
+    await expect.poll(async () => (await settings.get()).sessionLimit).toEqual({ kind: 'minutes', value: 1 });
+    await expect.element(lower).toBeDisabled();
+  });
+
+  it('shows how far this Session has come towards the limit', async () => {
+    const session = createTestSessionStore({
+      reelsWatched: 18,
+      playingMs: 20 * MINUTE,
+      lastSeenAt: NOW - MINUTE,
+      limitFrom: { reelsWatched: 6, playingMs: 0 },
+    });
+    const settings = createTestSettingsStore({ sessionLimit: { kind: 'reels', value: 30 } });
+    openPopup({ settings, session });
+
+    await expect.element(page.getByText('12 of 30 Reels before a break')).toBeVisible();
+
+    await settings.set({ sessionLimit: { kind: 'minutes', value: 45 } });
+
+    await expect.element(page.getByText('20 of 45 minutes before a break')).toBeVisible();
   });
 
   it('keeps a limit of at least one', async () => {
@@ -262,11 +301,178 @@ describe('Session Limit', () => {
   it('follows a change made in another tab', async () => {
     const settings = createTestSettingsStore();
     openPopup({ settings });
-    await expect.element(kind()).toHaveValue('off');
+    await expect.element(kind('Off')).toBeChecked();
 
     await settings.set({ sessionLimit: { kind: 'reels', value: 25 } });
 
-    await expect.element(kind()).toHaveValue('reels');
+    await expect.element(kind('Reels')).toBeChecked();
     await expect.element(page.getByRole('spinbutton', { name: 'Reels before a break' })).toHaveValue(25);
+  });
+});
+
+describe('Preferred Speed', () => {
+  const preferredSpeed = () => page.getByRole('slider', { name: 'Preferred Speed' });
+
+  /** Moves the slider to `speed` and lets go, as dragging it would. */
+  const slideTo = (speed: number) => {
+    const slider = preferredSpeed().element() as HTMLInputElement;
+    slider.value = String(speed);
+    slider.dispatchEvent(new Event('input', { bubbles: true }));
+    slider.dispatchEvent(new Event('change', { bubbles: true }));
+  };
+
+  it('offers 0.5x to 3x in steps of 0.25, at 1.5x to begin with', async () => {
+    openPopup({ settings: createTestSettingsStore() });
+
+    await expect.element(preferredSpeed()).toHaveValue('1.5');
+    await expect.element(preferredSpeed()).toHaveAttribute('aria-valuetext', '1.5×');
+    await expect.element(preferredSpeed()).toHaveAttribute('min', '0.5');
+    await expect.element(preferredSpeed()).toHaveAttribute('max', '3');
+    await expect.element(preferredSpeed()).toHaveAttribute('step', '0.25');
+  });
+
+  it('keeps the Preferred Speed the viewer picks', async () => {
+    const settings = createTestSettingsStore();
+    openPopup({ settings });
+    await expect.element(preferredSpeed()).toBeEnabled();
+
+    slideTo(2.25);
+
+    await expect.poll(async () => (await settings.get()).preferredSpeed).toBe(2.25);
+    await expect.element(page.getByText('Switch on to play Reels at 2.25×')).toBeVisible();
+  });
+
+  it('names the speed Reels play at while Speed is on', async () => {
+    openPopup({ settings: createTestSettingsStore({ speedOn: true, preferredSpeed: 2 }) });
+
+    await expect.element(page.getByText('Every Reel plays at 2×')).toBeVisible();
+  });
+
+  it('follows a change made in another tab', async () => {
+    const settings = createTestSettingsStore();
+    openPopup({ settings });
+    await expect.element(preferredSpeed()).toHaveValue('1.5');
+
+    await settings.set({ preferredSpeed: 0.75 });
+
+    await expect.element(preferredSpeed()).toHaveValue('0.75');
+  });
+});
+
+describe('Shortcuts', () => {
+  /** Opens the Shortcuts, folded away to begin with, and returns the settings. */
+  async function openShortcuts(initial: Partial<Settings> = {}) {
+    const settings = createTestSettingsStore(initial);
+    openPopup({ settings });
+    const toggle = page.getByRole('button', { name: 'Keyboard shortcuts' });
+    await expect.element(toggle).toHaveAttribute('aria-expanded', 'false');
+    await toggle.click();
+    await expect.element(toggle).toHaveAttribute('aria-expanded', 'true');
+    return settings;
+  }
+
+  /** A Shortcut's key, named for what it does, then its key. */
+  const shortcut = (name: string) => page.getByRole('button', { name: new RegExp(`^${name} `) });
+
+  const status = () => page.getByRole('region', { name: 'Keyboard shortcuts' }).getByRole('status');
+
+  it('keeps the Shortcuts out of reach until the viewer opens them', async () => {
+    openPopup({ settings: createTestSettingsStore() });
+
+    await expect.element(shortcut('Auto-Scroll on/off')).not.toBeInTheDocument();
+  });
+
+  it('lists each Shortcut with its key', async () => {
+    await openShortcuts({ shortcuts: { ...DEFAULT_SETTINGS.shortcuts, toggleSpeed: 'j' } });
+
+    await expect.element(shortcut('Auto-Scroll on/off')).toHaveTextContent('A');
+    await expect.element(shortcut('Speed on/off')).toHaveTextContent('J');
+  });
+
+  it('lists only Auto-Scroll and Speed, as Instagram moves between Reels itself', async () => {
+    await openShortcuts();
+    await expect.element(shortcut('Speed on/off')).toBeVisible();
+
+    expect(page.getByRole('listitem').elements()).toHaveLength(2);
+  });
+
+  it('changes a Shortcut to the next key the viewer presses', async () => {
+    const settings = await openShortcuts();
+
+    await shortcut('Speed on/off').click();
+    await expect.element(shortcut('Speed on/off')).toHaveTextContent('Press a key…');
+    await userEvent.keyboard('J');
+
+    await expect.poll(async () => (await settings.get()).shortcuts).toEqual({
+      ...DEFAULT_SETTINGS.shortcuts,
+      toggleSpeed: 'j',
+    });
+    await expect.element(shortcut('Speed on/off')).toHaveTextContent('J');
+  });
+
+  it('refuses a key another Shortcut already has, and waits for another', async () => {
+    const settings = await openShortcuts();
+
+    await shortcut('Speed on/off').click();
+    await userEvent.keyboard('a');
+    await expect.element(status()).toHaveTextContent('A is already a Shortcut.');
+    expect((await settings.get()).shortcuts).toEqual(DEFAULT_SETTINGS.shortcuts);
+    await userEvent.keyboard('j');
+
+    await expect.poll(async () => (await settings.get()).shortcuts.toggleSpeed).toBe('j');
+    await expect.element(status()).toBeEmptyDOMElement();
+  });
+
+  it('takes Space as a Shortcut without starting to wait for a key again', async () => {
+    const settings = await openShortcuts();
+
+    await shortcut('Speed on/off').click();
+    await userEvent.keyboard(' ');
+
+    await expect.poll(async () => (await settings.get()).shortcuts.toggleSpeed).toBe(' ');
+    await expect.element(shortcut('Speed on/off')).toHaveTextContent('Space');
+  });
+
+  it('frees the keys of the next and previous Reel Shortcuts that 3.0.0 saved', async () => {
+    const settings = await openShortcuts({
+      shortcuts: { ...DEFAULT_SETTINGS.shortcuts, nextReel: 'ArrowDown' } as Settings['shortcuts'],
+    });
+
+    await shortcut('Speed on/off').click();
+    await userEvent.keyboard('{ArrowDown}');
+
+    await expect.poll(async () => (await settings.get()).shortcuts).toEqual({
+      toggleAutoScroll: 'a',
+      toggleSpeed: 'ArrowDown',
+    });
+  });
+
+  it('keeps a Shortcut as it was when the viewer presses Escape', async () => {
+    const settings = await openShortcuts();
+
+    await shortcut('Speed on/off').click();
+    await userEvent.keyboard('{Escape}');
+
+    await expect.element(shortcut('Speed on/off')).toHaveTextContent('S');
+    expect((await settings.get()).shortcuts).toEqual(DEFAULT_SETTINGS.shortcuts);
+  });
+
+  it('puts every Shortcut back to its default on Reset', async () => {
+    const settings = await openShortcuts({ shortcuts: { toggleAutoScroll: 'q', toggleSpeed: 'w' } });
+    await expect.element(shortcut('Speed on/off')).toHaveTextContent('W');
+
+    await page.getByRole('button', { name: 'Reset Shortcuts' }).click();
+
+    await expect.poll(async () => (await settings.get()).shortcuts).toEqual({ toggleAutoScroll: 'a', toggleSpeed: 's' });
+    await expect.element(shortcut('Speed on/off')).toHaveTextContent('S');
+  });
+
+  it('follows a Shortcut changed in another tab', async () => {
+    const settings = await openShortcuts();
+    await expect.element(shortcut('Auto-Scroll on/off')).toHaveTextContent('A');
+
+    await settings.set({ shortcuts: { ...DEFAULT_SETTINGS.shortcuts, toggleAutoScroll: 'k' } });
+
+    await expect.element(shortcut('Auto-Scroll on/off')).toHaveTextContent('K');
   });
 });

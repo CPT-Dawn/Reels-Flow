@@ -18,8 +18,6 @@ describe('settings store', () => {
       shortcuts: {
         toggleAutoScroll: 'a',
         toggleSpeed: 's',
-        nextReel: 'ArrowDown',
-        previousReel: 'ArrowUp',
       },
       sessionLimit: { kind: 'off' },
     });

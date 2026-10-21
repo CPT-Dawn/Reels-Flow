@@ -4,7 +4,7 @@ import { createBreakNudge } from './break-nudge';
 import { watchHolds } from './holds';
 import { placeReelControls, type ReelControls } from './reel-control';
 import { watchReelEnds } from './reel-end';
-import { advance, currentReelVideo, goToReelBeside } from './reels-feed';
+import { advance, currentReelVideo } from './reels-feed';
 import { whileOnReelsFeed } from './route';
 import { trackSession } from './session';
 import { watchShortcuts } from './shortcuts';
@@ -81,11 +81,6 @@ export function mountEngine(
     if (current) void settings.set({ speedOn: !current.speedOn });
   };
 
-  const goToReel = (side: 'below' | 'above') => {
-    const video = currentReelVideo(document);
-    if (video) goToReelBeside(video, side);
-  };
-
   const unwatchRoute = whileOnReelsFeed(document.defaultView!, clock, () => {
     const holds = watchHolds(document, clock);
     const unwatchEnds = watchReelEnds(document, (video) => {
@@ -96,8 +91,6 @@ export function mountEngine(
     const unwatchShortcuts = watchShortcuts(document, () => current?.shortcuts, {
       toggleAutoScroll,
       toggleSpeed,
-      nextReel: () => goToReel('below'),
-      previousReel: () => goToReel('above'),
     });
     reelControls = placeReelControls(document, { getMessage, onClick: toggleAutoScroll });
     speed = watchSpeed(document, clock);

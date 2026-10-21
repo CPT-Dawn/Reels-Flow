@@ -6,9 +6,6 @@ import { DEFAULT_SETTINGS } from '@/settings/settings';
 // Longer than Reels Flow takes to notice Instagram has changed pages.
 const A_SECOND = 1000;
 
-/** `expect.poll` options with time for the Reels Feed to finish a smooth scroll, on a busy machine. */
-const A_SCROLL = { timeout: 5_000 };
-
 /**
  * Presses `key` on the Reels Feed, as the viewer would with focus on
  * `target`. Returns the keydown event, to see whether Reels Flow took it.
@@ -35,27 +32,14 @@ function mountStill(fixture: Parameters<typeof mountReelsFeed>[0]) {
 }
 
 describeEachFixture((fixture) => {
-  it('goes to the next Reel on Down', async () => {
+  it("leaves Up and Down to Instagram, which moves between Reels itself", async () => {
     const reelsFeed = await mountStill(fixture);
 
-    press(reelsFeed, 'ArrowDown');
+    const events = [press(reelsFeed, 'ArrowDown'), press(reelsFeed, 'ArrowUp')];
+    await aMomentLater();
 
-    await expect.poll(() => reelsFeed.timeline, A_SCROLL).toEqual(['Reels Feed scrolls', 'reel 1 in view']);
-  });
-
-  it('goes back to the previous Reel on Up', async () => {
-    const reelsFeed = await mountStill(fixture);
-    press(reelsFeed, 'ArrowDown');
-    await expect.poll(() => reelsFeed.timeline, A_SCROLL).toEqual(['Reels Feed scrolls', 'reel 1 in view']);
-
-    press(reelsFeed, 'ArrowUp');
-
-    await expect.poll(() => reelsFeed.timeline, A_SCROLL).toEqual([
-      'Reels Feed scrolls',
-      'reel 1 in view',
-      'Reels Feed scrolls',
-      'reel 0 in view',
-    ]);
+    expect(events.filter((event) => event.defaultPrevented)).toEqual([]);
+    expect(reelsFeed.timeline).toEqual([]);
   });
 
   it('switches Auto-Scroll off and on everywhere on A', async () => {
@@ -76,15 +60,15 @@ describeEachFixture((fixture) => {
     await expect.poll(async () => (await reelsFeed.settings.get()).autoScroll).toBe(false);
   });
 
-  it("keeps a Shortcut's key from Instagram and the browser, so a Reel is never skipped", async () => {
+  it("keeps a Shortcut's key from Instagram and the browser", async () => {
     const reelsFeed = await mountStill(fixture);
     const instagramHeard: string[] = [];
     const listen = (event: KeyboardEvent) => instagramHeard.push(event.key);
     reelsFeed.document.addEventListener('keydown', listen, true);
     reelsFeed.document.addEventListener('keydown', listen);
 
-    const events = [press(reelsFeed, 'ArrowDown'), press(reelsFeed, 'a')];
-    await expect.poll(() => reelsFeed.timeline, A_SCROLL).toEqual(['Reels Feed scrolls', 'reel 1 in view']);
+    const events = [press(reelsFeed, 's'), press(reelsFeed, 'a')];
+    await expect.poll(async () => (await reelsFeed.settings.get()).autoScroll).toBe(true);
 
     expect(events.filter((event) => !event.defaultPrevented)).toEqual([]);
     expect(instagramHeard).toEqual([]);
@@ -119,7 +103,7 @@ describeEachFixture((fixture) => {
     document.body.append(comments, menu);
 
     const events = [comment, item].flatMap((target) => [
-      press(reelsFeed, 'ArrowDown', { target }),
+      press(reelsFeed, 's', { target }),
       press(reelsFeed, 'a', { target }),
     ]);
     await aMomentLater();
@@ -136,8 +120,8 @@ describeEachFixture((fixture) => {
       press(reelsFeed, 'a', { ctrlKey: true }),
       press(reelsFeed, 'a', { metaKey: true }),
       press(reelsFeed, 'a', { altKey: true }),
-      press(reelsFeed, 'ArrowDown', { altKey: true }),
-      press(reelsFeed, 'ArrowDown', { ctrlKey: true }),
+      press(reelsFeed, 's', { altKey: true }),
+      press(reelsFeed, 's', { ctrlKey: true }),
     ];
     await aMomentLater();
 
@@ -159,7 +143,7 @@ describeEachFixture((fixture) => {
 
     const events = [comment, search, message, inMessage].flatMap((target) => [
       press(reelsFeed, 'a', { target }),
-      press(reelsFeed, 'ArrowDown', { target }),
+      press(reelsFeed, 's', { target }),
     ]);
     await aMomentLater();
 
@@ -180,11 +164,11 @@ describeEachFixture((fixture) => {
       settings: createTestSettingsStore({ autoScroll: false }),
     });
 
-    const events = [press(reelsFeed, 'a'), press(reelsFeed, 'ArrowDown')];
+    const events = [press(reelsFeed, 'a'), press(reelsFeed, 's')];
     await aMomentLater();
 
     expect(events.filter((event) => event.defaultPrevented)).toEqual([]);
-    expect((await reelsFeed.settings.get()).autoScroll).toBe(false);
+    expect(await reelsFeed.settings.get()).toMatchObject({ autoScroll: false, speedOn: false });
   });
 
   it('stops taking keys once the viewer leaves the Reels Feed', async () => {
@@ -192,31 +176,28 @@ describeEachFixture((fixture) => {
 
     reelsFeed.navigate('/explore/');
     reelsFeed.clock.advance(A_SECOND);
-    const event = press(reelsFeed, 'ArrowDown');
+    const event = press(reelsFeed, 'a');
     await aMomentLater();
 
     expect(event.defaultPrevented).toBe(false);
-    expect(reelsFeed.timeline).toEqual([]);
+    expect((await reelsFeed.settings.get()).autoScroll).toBe(false);
   });
 
-  it('follows a Shortcut changed on the Settings Page at once, in every open tab', async () => {
+  it('follows a Shortcut changed in the Popup at once, in every open tab', async () => {
     const settings = createTestSettingsStore({ autoScroll: false });
     const tabs = [
       await mountReelsFeed(fixture, { settings }),
       await mountReelsFeed(fixture, { settings }),
     ];
 
-    await settings.set({ shortcuts: { ...DEFAULT_SETTINGS.shortcuts, nextReel: 'j' } });
-    const downs = tabs.map((tab) => press(tab, 'ArrowDown'));
+    await settings.set({ shortcuts: { ...DEFAULT_SETTINGS.shortcuts, toggleAutoScroll: 'j' } });
+    const as = tabs.map((tab) => press(tab, 'a'));
     await aMomentLater();
-    expect(downs.filter((event) => event.defaultPrevented)).toEqual([]);
-    expect(tabs.map((tab) => tab.timeline)).toEqual([[], []]);
+    expect(as.filter((event) => event.defaultPrevented)).toEqual([]);
+    expect((await settings.get()).autoScroll).toBe(false);
 
-    tabs.forEach((tab) => press(tab, 'j'));
+    press(tabs[0]!, 'j');
 
-    await expect.poll(() => tabs.map((tab) => tab.timeline), A_SCROLL).toEqual([
-      ['Reels Feed scrolls', 'reel 1 in view'],
-      ['Reels Feed scrolls', 'reel 1 in view'],
-    ]);
+    await expect.poll(async () => (await settings.get()).autoScroll).toBe(true);
   });
 });

@@ -25,6 +25,6 @@ When Instagram changes its page, a fresh copy of the Reels Feed is the first ste
 
    The script refuses to write the fixture if a username, an Instagram address, a real picture or a script is left in it. It replaces names with `creator1`, `creator2`…, everything people wrote with lorem ipsum, and every picture with a grey square, and keeps Instagram's own labels (Like, Comment, Share…), which the engine relies on.
 5. Open `page.html` and skim it for anything personal the script didn't know about, such as interface text it should have kept or a new kind of label. Improve the script's lists rather than editing the page by hand, so the next fixture benefits too.
-6. Delete the saved page, then run `pnpm test`. The new fixture should now fail the tests the change on Instagram broke.
+6. Delete the saved page, then run `bun run test`. The new fixture should now fail the tests the change on Instagram broke.
 
 The clips in `clips/` are 2 to 3 second test patterns (VP9 WebM, which both browsers play), and `scrub-snapshot.ts` hands them out to Reels in turn.

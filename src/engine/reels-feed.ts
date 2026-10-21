@@ -23,28 +23,21 @@ export function currentReelVideo(document: Document): HTMLVideoElement | undefin
   return current;
 }
 
-/** The Advancer: scrolls the Reels Feed to the Reel below `video`'s. */
-export function advance(video: HTMLVideoElement) {
-  goToReelBeside(video, 'below');
-}
-
 /**
- * Scrolls the Reels Feed to the Reel right below or above `video`'s.
+ * The Advancer: scrolls the Reels Feed to the Reel right below `video`'s.
  *
  * The Reels Feed is the nearest ancestor that scrolls vertically, and each of
  * its children is one Reel, whether or not Instagram has loaded its video yet.
  * Scrolling to an absolute position, not by an amount, means moving twice
- * from the same Reel still lands on the Reel right beside it.
+ * from the same Reel still lands on the Reel right below it.
  */
-export function goToReelBeside(video: HTMLVideoElement, side: 'below' | 'above') {
+export function advance(video: HTMLVideoElement) {
   const reelsFeed = scrollingAncestor(video);
   if (!reelsFeed) return;
   let reel: Element = video;
   while (reel.parentElement !== reelsFeed) reel = reel.parentElement!;
-  const sibling = (element: Element) =>
-    side === 'below' ? element.nextElementSibling : element.previousElementSibling;
-  let next = sibling(reel);
-  while (next && next.getBoundingClientRect().height === 0) next = sibling(next);
+  let next = reel.nextElementSibling;
+  while (next && next.getBoundingClientRect().height === 0) next = next.nextElementSibling;
   if (!next) return;
 
   reelsFeed.scrollTo({

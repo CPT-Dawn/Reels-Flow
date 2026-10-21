@@ -64,8 +64,6 @@ describe('upgrade from 2.x', () => {
       shortcuts: {
         toggleAutoScroll: 'a',
         toggleSpeed: 's',
-        nextReel: 'ArrowDown',
-        previousReel: 'ArrowUp',
       },
       sessionLimit: { kind: 'off' },
     });

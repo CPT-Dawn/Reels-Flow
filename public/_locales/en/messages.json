@@ -15,21 +15,49 @@
     "message": "Reels Flow",
     "description": "Document title of the Popup."
   },
-  "settingsPageTitle": {
-    "message": "Reels Flow Settings",
-    "description": "Document title of the Settings Page."
-  },
   "popupAutoScroll": {
     "message": "Auto-Scroll",
     "description": "Popup switch that turns Auto-Scroll on or off."
   },
+  "popupAutoScrollOn": {
+    "message": "Moves to the next Reel when one ends",
+    "description": "Popup text under Auto-Scroll while it is on."
+  },
+  "popupAutoScrollOff": {
+    "message": "Off. Reels loop until you scroll",
+    "description": "Popup text under Auto-Scroll while it is off: Instagram replays a Reel until the viewer moves on."
+  },
   "popupSpeed": {
     "message": "Speed",
-    "description": "Popup switch that turns Speed on or off: while on, every Reel plays at the Preferred Speed chosen on the Settings Page."
+    "description": "Popup switch that turns Speed on or off: while on, every Reel plays at the Preferred Speed chosen just below it."
+  },
+  "popupSpeedOn": {
+    "message": "Every Reel plays at $SPEED$",
+    "description": "Popup text under Speed while it is on.",
+    "placeholders": {
+      "speed": {
+        "content": "$1",
+        "example": "1.5×"
+      }
+    }
+  },
+  "popupSpeedOff": {
+    "message": "Switch on to play Reels at $SPEED$",
+    "description": "Popup text under Speed while it is off.",
+    "placeholders": {
+      "speed": {
+        "content": "$1",
+        "example": "1.5×"
+      }
+    }
   },
   "popupReelControl": {
     "message": "Button on Reels",
     "description": "Popup switch that shows or hides the Reel Control, Reels Flow's Auto-Scroll button beside each Reel."
+  },
+  "popupReelControlHint": {
+    "message": "The Auto button beside each Reel",
+    "description": "Popup text under the Button on Reels switch, describing the Reel Control."
   },
   "popupReelsWatched": {
     "message": "Reels watched this session",
@@ -59,9 +87,41 @@
     "message": "Minutes before a break",
     "description": "What screen readers call the Popup's number field for a Session Limit in minutes."
   },
-  "popupSettings": {
-    "message": "Settings",
-    "description": "Popup button that opens the Settings Page."
+  "popupSessionLimitProgressReels": {
+    "message": "$COUNT$ of $LIMIT$ Reels before a break",
+    "description": "Popup progress towards a Session Limit in Reels, in the current Session.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "12"
+      },
+      "limit": {
+        "content": "$2",
+        "example": "30"
+      }
+    }
+  },
+  "popupSessionLimitProgressMinutes": {
+    "message": "$COUNT$ of $LIMIT$ minutes before a break",
+    "description": "Popup progress towards a Session Limit in minutes of Reels playing, in the current Session.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "12"
+      },
+      "limit": {
+        "content": "$2",
+        "example": "30"
+      }
+    }
+  },
+  "popupSessionLimitLower": {
+    "message": "Lower the limit",
+    "description": "What screen readers call the Popup's minus button beside the Session Limit number."
+  },
+  "popupSessionLimitRaise": {
+    "message": "Raise the limit",
+    "description": "What screen readers call the Popup's plus button beside the Session Limit number."
   },
   "popupWhatsNew": {
     "message": "What's new",
@@ -97,37 +157,29 @@
       }
     }
   },
-  "settingsShortcuts": {
-    "message": "Shortcuts",
-    "description": "Settings Page heading over the list of Shortcuts, single keys that act on the Reels Feed."
+  "popupShortcuts": {
+    "message": "Keyboard shortcuts",
+    "description": "Popup heading of the section that lists the Shortcuts, single keys that act on the Reels Feed. Clicking it opens or closes the section."
   },
-  "settingsShortcutsHint": {
-    "message": "Single keys that work on Instagram Reels, except while you're typing. Click a key to change it.",
-    "description": "Settings Page text under the Shortcuts heading."
+  "popupShortcutsHint": {
+    "message": "Single keys on Instagram Reels, never while you're typing. Select a key to change it.",
+    "description": "Popup text at the top of the Shortcuts section."
   },
   "shortcutToggleAutoScroll": {
     "message": "Auto-Scroll on/off",
-    "description": "Settings Page name of the Shortcut that switches Auto-Scroll on or off."
+    "description": "Popup name of the Shortcut that switches Auto-Scroll on or off."
   },
   "shortcutToggleSpeed": {
     "message": "Speed on/off",
-    "description": "Settings Page name of the Shortcut that switches Speed on or off."
+    "description": "Popup name of the Shortcut that switches Speed on or off."
   },
-  "shortcutNextReel": {
-    "message": "Next Reel",
-    "description": "Settings Page name of the Shortcut that goes to the next Reel."
-  },
-  "shortcutPreviousReel": {
-    "message": "Previous Reel",
-    "description": "Settings Page name of the Shortcut that goes back to the previous Reel."
-  },
-  "settingsPressKey": {
+  "popupPressKey": {
     "message": "Press a key…",
-    "description": "Shown on a Shortcut's key on the Settings Page while it waits for the viewer to press its new key."
+    "description": "Shown on a Shortcut's key in the Popup while it waits for the viewer to press its new key."
   },
-  "settingsKeyTaken": {
+  "popupKeyTaken": {
     "message": "$KEY$ is already a Shortcut.",
-    "description": "Settings Page notice when the viewer presses a key that another Shortcut already has; the key is not taken.",
+    "description": "Popup notice when the viewer presses a key that another Shortcut already has; the key is not taken.",
     "placeholders": {
       "key": {
         "content": "$1",
@@ -135,21 +187,13 @@
       }
     }
   },
-  "settingsResetShortcuts": {
+  "popupResetShortcuts": {
     "message": "Reset Shortcuts",
-    "description": "Settings Page button that puts every Shortcut back to its default key."
+    "description": "Popup button that puts every Shortcut back to its default key."
   },
-  "settingsSpeed": {
-    "message": "Speed",
-    "description": "Settings Page heading over the Preferred Speed setting."
-  },
-  "settingsPreferredSpeed": {
+  "popupPreferredSpeed": {
     "message": "Preferred Speed",
-    "description": "Settings Page label of the choice of speed every Reel plays at while Speed is on."
-  },
-  "settingsPreferredSpeedHint": {
-    "message": "How fast Reels play while Speed is on. Switch Speed on or off from the toolbar button or with its Shortcut.",
-    "description": "Settings Page text under the Speed heading."
+    "description": "What screen readers call the Popup's slider for the Preferred Speed, how fast every Reel plays while Speed is on (0.5x to 3x)."
   },
   "breakNudgeTitle": {
     "message": "Time for a break?",

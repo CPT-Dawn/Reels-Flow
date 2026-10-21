@@ -1,123 +1,398 @@
-/* Instagram's own colour tokens and type stack, so the Popup feels native.
-   The brand is Reels Flow's: its icon and name, never Instagram's marks. */
+/* Reels Flow's own look: cool, quiet surfaces, and the icon's coral-to-amber
+   glow saved for the one thing that matters, Auto-Scroll. Never Instagram's
+   marks or colours. */
 :root {
   color-scheme: light dark;
-  --ig-primary-background: #ffffff;
-  --ig-secondary-background: #fafafa;
-  --ig-hover-overlay: rgba(0, 0, 0, 0.05);
-  --ig-primary-text: #000000;
-  --ig-secondary-text: #737373;
-  --ig-separator: #dbdbdb;
-  --ig-link: #00376b;
-  --ig-focus-ring: #0095f6;
-  --ig-badge: #ff3040;
-  --ig-switch-off: #dbdbdb;
-  --ig-switch-on: #000000;
-  --ig-switch-knob: #ffffff;
+  --rf-glow: linear-gradient(135deg, #ff3b6b 0%, #ff6a3d 55%, #ffb938 100%);
+  --rf-glow-flat: #ff5a4a;
+  --rf-canvas: #f3f3f6;
+  --rf-surface: #ffffff;
+  --rf-sunken: #ececf1;
+  --rf-ink: #17151c;
+  --rf-muted: #6b6875;
+  --rf-line: rgba(23, 21, 28, 0.08);
+  --rf-accent-ink: #d8372a;
+  --rf-switch-off: #d9d8df;
+  --rf-knob-shadow: 0 1px 2px rgba(23, 21, 28, 0.18), 0 2px 6px rgba(23, 21, 28, 0.12);
+  --rf-lift: 0 1px 2px rgba(23, 21, 28, 0.06), 0 8px 24px -12px rgba(23, 21, 28, 0.18);
+  --rf-hero-glow: 0 12px 32px -14px rgba(255, 74, 74, 0.7);
+  --rf-error: #d8372a;
+  --rf-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --rf-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --ig-primary-background: #000000;
-    --ig-secondary-background: #121212;
-    --ig-hover-overlay: rgba(255, 255, 255, 0.1);
-    --ig-primary-text: #f5f5f5;
-    --ig-secondary-text: #a8a8a8;
-    --ig-separator: #363636;
-    --ig-link: #e0f1ff;
-    --ig-switch-off: #363636;
-    --ig-switch-on: #f5f5f5;
-    --ig-switch-knob: #000000;
+    --rf-canvas: #131117;
+    --rf-surface: #1d1b22;
+    --rf-sunken: #28252e;
+    --rf-ink: #f3f1f6;
+    --rf-muted: #a19cab;
+    --rf-line: rgba(255, 255, 255, 0.07);
+    --rf-accent-ink: #ff8a62;
+    --rf-switch-off: #3a3741;
+    --rf-knob-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3);
+    --rf-lift: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+    --rf-hero-glow: 0 14px 36px -16px rgba(255, 74, 74, 0.55);
+    --rf-error: #ff7a6b;
   }
 }
 
 body {
   margin: 0;
-  background: var(--ig-primary-background);
-  color: var(--ig-primary-text);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: var(--rf-canvas);
+  color: var(--rf-ink);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI Variable Text', 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
   font-size: 14px;
-  line-height: 18px;
+  line-height: 1.35;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--rf-accent-ink);
+  outline-offset: 2px;
 }
 
 .rf-popup {
-  width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-sizing: border-box;
+  width: 340px;
+  padding: 12px 12px 0;
 }
+
+/* One entrance as the Popup opens, then motion only answers the viewer. */
+.rf-popup > * {
+  animation: rf-rise 0.5s var(--rf-ease) both;
+}
+
+.rf-popup > :nth-child(2) {
+  animation-delay: 40ms;
+}
+
+.rf-popup > :nth-child(3) {
+  animation-delay: 90ms;
+}
+
+.rf-popup > :nth-child(4) {
+  animation-delay: 140ms;
+}
+
+@keyframes rf-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* Header */
 
 .rf-header {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 14px 12px 12px 16px;
-  border-bottom: 1px solid var(--ig-separator);
+  padding: 2px 4px 2px 6px;
 }
 
 .rf-brand-icon {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
 }
 
 .rf-brand-name {
   flex: 1;
   margin: 0;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
-  line-height: 20px;
-}
-
-.rf-settings-button {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: none;
-  color: inherit;
-  cursor: pointer;
-}
-
-.rf-settings-button:hover {
-  background: var(--ig-hover-overlay);
-}
-
-.rf-settings-button svg {
-  width: 20px;
-  height: 20px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.8;
-  stroke-linejoin: round;
+  letter-spacing: -0.01em;
 }
 
 .rf-whats-new {
   position: relative;
-  padding: 6px 8px;
-  border-radius: 8px;
-  color: var(--ig-primary-text);
+  padding: 5px 11px;
+  border: 1px solid var(--rf-line);
+  border-radius: 999px;
+  background: var(--rf-surface);
+  color: var(--rf-ink);
   font-size: 12px;
   font-weight: 600;
   text-decoration: none;
+  transition: background-color 0.2s, transform 0.2s var(--rf-spring);
 }
 
 .rf-whats-new:hover {
-  background: var(--ig-hover-overlay);
+  background: var(--rf-sunken);
 }
 
-/* Instagram's unread dot. */
+.rf-whats-new:active {
+  transform: scale(0.96);
+}
+
+/* The unread dot, with a soft ring that pulses a few times to be noticed. */
 .rf-unread-dot {
   position: absolute;
-  top: 4px;
-  right: 2px;
-  width: 6px;
-  height: 6px;
+  top: -2px;
+  right: -2px;
+  width: 9px;
+  height: 9px;
+  border: 2px solid var(--rf-canvas);
   border-radius: 50%;
-  background: var(--ig-badge);
+  background: var(--rf-glow-flat);
 }
 
-.rf-controls {
-  padding: 4px 0;
+.rf-unread-dot::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: var(--rf-glow-flat);
+  animation: rf-ping 1.8s var(--rf-ease) 0.6s 3;
+  opacity: 0;
+}
+
+@keyframes rf-ping {
+  0% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.2);
+  }
+}
+
+/* Auto-Scroll: the glowing card, with Reels flowing by while it's on. */
+
+.rf-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 22px;
+  background: var(--rf-surface);
+  box-shadow: var(--rf-lift);
+  transition: box-shadow 0.4s var(--rf-ease), color 0.3s;
+}
+
+.rf-hero::before,
+.rf-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.45s var(--rf-ease);
+}
+
+.rf-hero::before {
+  background: var(--rf-glow);
+}
+
+/* A sheen across the top of the glow, like the icon's glass. */
+.rf-hero::after {
+  background: radial-gradient(120% 80% at 15% 0%, rgba(255, 255, 255, 0.35), transparent 60%);
+}
+
+.rf-hero.rf-on {
+  color: #ffffff;
+  box-shadow: var(--rf-hero-glow);
+}
+
+.rf-hero.rf-on::before,
+.rf-hero.rf-on::after {
+  opacity: 1;
+}
+
+.rf-hero-toggle {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 14px 12px 16px;
+  cursor: pointer;
+  transition: transform 0.25s var(--rf-spring);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.rf-hero-toggle:active {
+  transform: scale(0.985);
+}
+
+.rf-hero-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.rf-hero-name {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.rf-hero-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.rf-hero-status {
+  color: var(--rf-muted);
+  font-size: 12.5px;
+  text-wrap: pretty;
+  transition: color 0.3s;
+}
+
+.rf-on .rf-hero-status {
+  color: rgba(255, 255, 255, 0.86);
+}
+
+/* A window onto a strip of Reels: every few seconds the next one slides up,
+   and the bar along the one in view fills as it plays. */
+.rf-flow {
+  position: relative;
+  overflow: hidden;
+  width: 40px;
+  height: 60px;
+  border-radius: 11px;
+  background: var(--rf-sunken);
+  transition: background-color 0.4s;
+}
+
+.rf-on .rf-flow {
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+
+.rf-flow-track {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 5px;
+  animation: rf-advance 2.6s var(--rf-ease) infinite paused;
+}
+
+.rf-on .rf-flow-track {
+  animation-play-state: running;
+}
+
+.rf-flow-reel {
+  position: relative;
+  flex: none;
+  height: 46px;
+  border-radius: 7px;
+  background: var(--rf-switch-off);
+  transition: background-color 0.4s;
+}
+
+.rf-on .rf-flow-reel {
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.rf-flow-reel:first-child::after {
+  content: '';
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  left: 5px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--rf-glow-flat);
+  transform-origin: left;
+  transform: scaleX(0.4);
+  animation: rf-play 2.6s linear infinite paused;
+}
+
+.rf-on .rf-flow-reel:first-child::after {
+  animation-play-state: running;
+}
+
+@keyframes rf-advance {
+  0%,
+  72% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-51px);
+  }
+}
+
+@keyframes rf-play {
+  0% {
+    transform: scaleX(0);
+  }
+  72%,
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+.rf-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 16px;
+  padding: 10px 0 12px;
+  border-top: 1px solid var(--rf-line);
+  transition: border-color 0.3s;
+}
+
+.rf-on .rf-stat {
+  border-top-color: rgba(255, 255, 255, 0.24);
+}
+
+.rf-stat-count {
+  display: inline-block;
+  min-width: 1ch;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI Variable Display', 'Segoe UI', Roboto,
+    sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.rf-stat-count.rf-counted {
+  animation: rf-count 0.5s var(--rf-spring);
+}
+
+@keyframes rf-count {
+  from {
+    opacity: 0.2;
+    transform: translateY(7px);
+  }
+}
+
+.rf-stat-label {
+  color: var(--rf-muted);
+  font-size: 12.5px;
+  transition: color 0.3s;
+}
+
+.rf-on .rf-stat-label {
+  color: rgba(255, 255, 255, 0.86);
+}
+
+/* The other controls, together in one quiet panel. */
+
+.rf-group {
+  overflow: hidden;
+  border: 1px solid var(--rf-line);
+  border-radius: 18px;
+  background: var(--rf-surface);
+}
+
+.rf-section + .rf-section {
+  border-top: 1px solid var(--rf-line);
 }
 
 .rf-row {
@@ -125,146 +400,668 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 16px;
+  padding: 11px 16px;
   cursor: pointer;
+  transition: background-color 0.2s;
 }
 
 .rf-row:hover {
-  background: var(--ig-hover-overlay);
+  background: color-mix(in srgb, var(--rf-sunken) 55%, transparent);
 }
 
-/* A count to read, not a control: no hover. */
-.rf-stat {
-  cursor: default;
+.rf-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
-.rf-stat:hover {
-  background: none;
-}
-
-.rf-count {
-  font-size: 16px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-/* A setting with its own inputs: the row itself isn't one to press. */
-.rf-limit {
-  cursor: default;
-}
-
-.rf-limit:hover {
-  background: none;
-}
-
-.rf-limit-inputs {
+.rf-row-name {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
 }
 
-.rf-select,
-.rf-number {
+.rf-row-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.rf-row-hint {
+  color: var(--rf-muted);
+  font-size: 12.5px;
+}
+
+/* The Shortcut key beside a control's name: a hint, changed under Shortcuts. */
+.rf-key-hint {
+  display: inline-grid;
+  place-items: center;
   box-sizing: border-box;
-  height: 32px;
-  margin: 0;
-  padding: 0 8px;
-  border: 1px solid var(--ig-separator);
-  border-radius: 8px;
-  background: var(--ig-secondary-background);
-  color: var(--ig-primary-text);
-  font: inherit;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+  border: 1px solid var(--rf-line);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  background: var(--rf-sunken);
+  color: var(--rf-muted);
+  font-family: inherit;
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1;
 }
 
-.rf-select {
-  cursor: pointer;
+.rf-key-hint:empty {
+  display: none;
 }
 
-.rf-number {
-  width: 64px;
-  font-variant-numeric: tabular-nums;
+.rf-on .rf-key-hint {
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
 }
 
-.rf-select:disabled {
-  opacity: 0.4;
-}
-
-/* A native checkbox drawn as Instagram's switch, so it keeps its keyboard
-   and screen reader behaviour. */
+/* A native checkbox drawn as a switch: the glow when on, a springy knob. */
 .rf-switch {
   appearance: none;
   position: relative;
   flex: none;
   width: 44px;
-  height: 24px;
+  height: 26px;
   margin: 0;
-  border-radius: 12px;
-  background: var(--ig-switch-off);
+  border-radius: 13px;
+  background: var(--rf-switch-off);
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.3s, box-shadow 0.3s;
 }
 
 .rf-switch::before {
   content: '';
   position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--ig-switch-knob);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  transition: transform 0.2s;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--rf-glow);
+  opacity: 0;
+  transition: opacity 0.3s var(--rf-ease);
 }
 
-.rf-switch:checked {
-  background: var(--ig-switch-on);
+.rf-switch::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: var(--rf-knob-shadow);
+  transition: transform 0.4s var(--rf-spring), width 0.2s var(--rf-ease);
 }
 
 .rf-switch:checked::before {
-  transform: translateX(20px);
+  opacity: 1;
+}
+
+.rf-switch:checked::after {
+  transform: translateX(18px);
+}
+
+/* The knob stretches a little while pressed. */
+.rf-switch:active:not(:disabled)::after {
+  width: 24px;
+}
+
+.rf-switch:checked:active:not(:disabled)::after {
+  transform: translateX(14px);
 }
 
 .rf-switch:disabled {
   opacity: 0.4;
+  cursor: default;
 }
 
-:focus-visible {
-  outline: 2px solid var(--ig-focus-ring);
+/* On the glowing card the switch is frosted glass instead. */
+.rf-on .rf-switch-on-media::before {
+  opacity: 0;
+}
+
+.rf-on .rf-switch-on-media {
+  background: rgba(255, 255, 255, 0.3);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+.rf-on .rf-switch-on-media:focus-visible,
+.rf-on .rf-hero-toggle :focus-visible {
+  outline-color: #ffffff;
+}
+
+/* Preferred Speed: a slider between its slowest and fastest, whose bubble
+   rides the thumb. */
+
+.rf-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px 12px;
+}
+
+.rf-slider-end {
+  flex: none;
+  margin-top: 20px;
+  color: var(--rf-muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.rf-slider-wrap {
+  --thumb: 20px;
+  position: relative;
+  flex: 1;
+  padding-top: 22px;
+}
+
+.rf-slider-bubble {
+  position: absolute;
+  top: 0;
+  left: calc(var(--thumb) / 2 + var(--at, 0) * (100% - var(--thumb)));
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--rf-ink);
+  color: var(--rf-surface);
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 16px;
+  transform: translateX(-50%);
+  transition: transform 0.25s var(--rf-spring), background-color 0.3s;
+}
+
+.rf-speed:has(.rf-switch:checked) .rf-slider-bubble {
+  background: var(--rf-glow-flat);
+  color: #ffffff;
+}
+
+.rf-slider-wrap:has(.rf-slider:active) .rf-slider-bubble {
+  transform: translateX(-50%) scale(1.12);
+}
+
+.rf-slider {
+  --fill: var(--rf-muted);
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: var(--thumb);
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.rf-speed:has(.rf-switch:checked) .rf-slider {
+  --fill: var(--rf-glow-flat);
+}
+
+.rf-slider:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* The track: filled up to the thumb. */
+.rf-slider::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(var(--fill), var(--fill)) 0 / calc(var(--thumb) / 2 + var(--at, 0) * (100% - var(--thumb))) 100% no-repeat,
+    var(--rf-sunken);
+}
+
+.rf-slider::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--rf-sunken);
+}
+
+.rf-slider::-moz-range-progress {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--fill);
+}
+
+.rf-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: var(--thumb);
+  height: var(--thumb);
+  margin-top: -7px;
+  border: 0;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: var(--rf-knob-shadow), 0 0 0 1px var(--rf-line);
+  transition: transform 0.25s var(--rf-spring);
+}
+
+.rf-slider::-moz-range-thumb {
+  width: var(--thumb);
+  height: var(--thumb);
+  border: 0;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: var(--rf-knob-shadow), 0 0 0 1px var(--rf-line);
+  transition: transform 0.25s var(--rf-spring);
+}
+
+.rf-slider:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+
+.rf-slider:active::-moz-range-thumb {
+  transform: scale(1.15);
+}
+
+.rf-slider:focus-visible {
+  outline: none;
+}
+
+.rf-slider:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid var(--rf-accent-ink);
   outline-offset: 2px;
 }
+
+.rf-slider:focus-visible::-moz-range-thumb {
+  outline: 2px solid var(--rf-accent-ink);
+  outline-offset: 2px;
+}
+
+/* Session Limit: a segmented choice with a pill that slides to it. */
+
+.rf-limit-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px 10px 16px;
+  white-space: nowrap;
+}
+
+.rf-segments {
+  --index: 0;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 3px;
+  border-radius: 11px;
+  background: var(--rf-sunken);
+}
+
+.rf-segment-pill {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc((100% - 6px) / 3);
+  border-radius: 8px;
+  background: var(--rf-surface);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12), 0 2px 8px -2px rgba(0, 0, 0, 0.12);
+  transform: translateX(calc(var(--index) * 100%));
+  transition: transform 0.4s var(--rf-spring);
+}
+
+.rf-segment {
+  position: relative;
+  padding: 5px 9px;
+  border-radius: 8px;
+  color: var(--rf-muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.rf-segment:has(:checked) {
+  color: var(--rf-ink);
+}
+
+.rf-segment:has(:focus-visible) {
+  outline: 2px solid var(--rf-accent-ink);
+  outline-offset: -1px;
+}
+
+.rf-segment:has(:disabled) {
+  cursor: default;
+  opacity: 0.4;
+}
+
+/* The native radio, unseen, over its whole segment. */
+.rf-segment-input {
+  appearance: none;
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+
+/* What unfolds below a control: the Session Limit's number, the Shortcuts. */
+.rf-reveal {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  /* Hidden once folded, so screen readers skip it too. */
+  visibility: hidden;
+  transition: grid-template-rows 0.4s var(--rf-ease), opacity 0.3s var(--rf-ease), visibility 0s 0.4s;
+}
+
+.rf-reveal.rf-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.rf-reveal-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.rf-limit-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 16px 14px;
+}
+
+.rf-stepper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px;
+  border-radius: 12px;
+  background: var(--rf-sunken);
+}
+
+.rf-stepper-button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: var(--rf-surface);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.2s var(--rf-spring), opacity 0.2s;
+}
+
+.rf-stepper-button:active:not(:disabled) {
+  transform: scale(0.9);
+}
+
+.rf-stepper-button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.rf-stepper-readout {
+  display: flex;
+  flex: 1;
+  align-items: baseline;
+  justify-content: center;
+  gap: 5px;
+  cursor: text;
+}
+
+.rf-stepper-value {
+  box-sizing: content-box;
+  width: 3ch;
+  padding: 4px 2px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  text-align: right;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.rf-stepper-value::-webkit-inner-spin-button,
+.rf-stepper-value::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.rf-stepper-value:focus-visible {
+  outline-offset: 0;
+}
+
+.rf-stepper-unit {
+  color: var(--rf-muted);
+  font-size: 13px;
+}
+
+.rf-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.rf-progress-bar {
+  overflow: hidden;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--rf-sunken);
+}
+
+.rf-progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--rf-glow);
+  transform-origin: left;
+  transform: scaleX(var(--at, 0));
+  transition: transform 0.6s var(--rf-ease);
+}
+
+.rf-progress-text {
+  color: var(--rf-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Shortcuts */
+
+.rf-disclosure {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 16px;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.rf-disclosure:hover {
+  background: color-mix(in srgb, var(--rf-sunken) 55%, transparent);
+}
+
+.rf-disclosure:focus-visible {
+  outline-offset: -2px;
+}
+
+.rf-chevron {
+  width: 7px;
+  height: 7px;
+  margin: 0 4px 4px 0;
+  border-right: 2px solid var(--rf-muted);
+  border-bottom: 2px solid var(--rf-muted);
+  transform: rotate(45deg);
+  transition: transform 0.35s var(--rf-spring), margin 0.35s var(--rf-ease);
+}
+
+[aria-expanded='true'] > .rf-chevron {
+  margin: 4px 4px 0 0;
+  transform: rotate(-135deg);
+}
+
+.rf-shortcuts-body {
+  padding: 0 16px 12px;
+}
+
+.rf-shortcuts-hint {
+  margin: 0 0 6px;
+  color: var(--rf-muted);
+  font-size: 12.5px;
+}
+
+.rf-shortcuts {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rf-shortcut {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 0;
+}
+
+/* A Shortcut's key, drawn as a keycap; pressing it waits for a new key. */
+.rf-keycap {
+  min-width: 38px;
+  height: 32px;
+  padding: 0 11px;
+  border: 1px solid var(--rf-line);
+  border-bottom-width: 3px;
+  border-radius: 9px;
+  background: var(--rf-sunken);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s var(--rf-ease), border-bottom-width 0.15s, border-color 0.2s;
+}
+
+.rf-keycap:active:not(:disabled) {
+  border-bottom-width: 1px;
+  transform: translateY(2px);
+}
+
+.rf-keycap.rf-capturing {
+  border-color: var(--rf-glow-flat);
+  color: var(--rf-muted);
+  font-weight: 500;
+  animation: rf-listen 1.4s ease-in-out infinite;
+}
+
+@keyframes rf-listen {
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--rf-glow-flat) 22%, transparent);
+  }
+}
+
+.rf-keycap:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.rf-shortcuts-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.rf-shortcuts-status {
+  flex: 1;
+  margin: 0;
+  color: var(--rf-error);
+  font-size: 12px;
+}
+
+.rf-text-button {
+  flex: none;
+  padding: 6px 2px;
+  border: 0;
+  background: none;
+  color: var(--rf-accent-ink);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.rf-text-button:hover {
+  text-decoration: underline;
+}
+
+/* Footer */
 
 .rf-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 16px;
-  border-top: 1px solid var(--ig-separator);
-  background: var(--ig-secondary-background);
+  padding: 2px 6px 12px;
+  font-size: 12.5px;
 }
 
 .rf-footer a {
+  border-radius: 6px;
+  color: var(--rf-muted);
+  font-weight: 600;
   text-decoration: none;
+  transition: color 0.2s;
 }
 
 .rf-footer a:hover {
-  text-decoration: underline;
-}
-
-.rf-report {
-  color: var(--ig-link);
-  font-weight: 600;
+  color: var(--rf-ink);
 }
 
 .rf-support {
-  color: var(--ig-secondary-text);
-  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.rf-heart {
+  display: inline-block;
+  color: var(--rf-glow-flat);
+  transition: transform 0.3s var(--rf-spring);
+}
+
+.rf-support:hover .rf-heart {
+  animation: rf-beat 0.9s ease-in-out infinite;
+}
+
+@keyframes rf-beat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.25);
+  }
+  45% {
+    transform: scale(1);
+  }
+  60% {
+    transform: scale(1.15);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rf-switch,
-  .rf-switch::before {
-    transition: none;
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
   }
 }

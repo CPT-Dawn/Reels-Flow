@@ -63,16 +63,12 @@ The Auto-Scroll on/off button Reels Flow places on the Reels Feed, ideally among
 _Avoid_: Toggle, injected button, floating button, injectReelsButton
 
 **Shortcut**:
-A single key that acts on the Reels Feed (e.g. Auto-Scroll on/off, Speed on/off, next/previous Reel). Active only on the Reels Feed and never while the viewer is typing. The viewer can change which key does what.
+A single key that acts on the Reels Feed: Auto-Scroll on/off or Speed on/off. Active only on the Reels Feed and never while the viewer is typing. The viewer can change which key does what. Moving between Reels is left to Instagram's own Up and Down keys.
 _Avoid_: Hotkey, command, keybind
 
 **Popup**:
-The panel that opens from the extension's toolbar icon; it holds the everyday controls, the Session counter and the links.
-_Avoid_: Dashboard, control center, menu
-
-**Settings Page**:
-The full-page settings screen for less-used options: Shortcuts and the Preferred Speed.
-_Avoid_: Options page, preferences
+The panel that opens from the extension's toolbar icon, and the only place to change settings: the everyday controls, the Preferred Speed, the Session Limit, the Shortcuts, the Session counter and the links. There is no separate settings page.
+_Avoid_: Dashboard, control center, menu, Settings Page, options page
 
 **What's new**:
 The Popup link to news about recent versions. After an update it carries a dot until the viewer opens it; updates never open a tab on their own.

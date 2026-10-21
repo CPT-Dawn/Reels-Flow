@@ -9,12 +9,9 @@ mountPopup(document, {
   settings: createSettingsStore(),
   session: createSessionStore(),
   whatsNew: createWhatsNew(),
-  message: (key) => browser.i18n.getMessage(key),
+  message: (key, substitutions) => browser.i18n.getMessage(key, substitutions),
   version: browser.runtime.getManifest().version,
-  // Each store gets its own build, so the build knows its browser.
+  // Each store gets its own build, so the build knows its browser. Edge and
+  // other Chromium browsers run the Chrome build and report "chrome".
   browser: import.meta.env.BROWSER,
-  openSettingsPage: () => {
-    void browser.runtime.openOptionsPage();
-    window.close();
-  },
 });
