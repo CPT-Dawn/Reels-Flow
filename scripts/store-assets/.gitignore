@@ -1,0 +1,3 @@
+# Captures, @2x masters and composed pages: rebuilt by `bun run store-assets`.
+.raw/
+.page-*.html

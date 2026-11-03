@@ -66,7 +66,7 @@ Website: https://reelsflow.cptdawn.dev
 
 ## Images
 
-All in `store assets/`. Check sizes with `file "store assets"/*/*.png` (see the release checklist).
+All in `store assets/`, generated from the real extension by `bun run store-assets` (see `docs/release/store-assets.md`). Never edit them by hand: change the scenes in `scripts/store-assets/` and regenerate. Check sizes with `file "store assets"/*/*.png` (see the release checklist).
 
 | Store | File | Size | Slot |
 | --- | --- | --- | --- |
@@ -80,7 +80,7 @@ Screenshots and tiles show the Reels Flow icon and the Popup, never Instagram's 
 
 ## Featured badge nomination
 
-Submit through the Chrome Web Store One Stop Support form (Developer Dashboard → Support → "My item" → nominate for a Featured badge) once 3.1.0 is live. Ready to paste:
+Submit through the Chrome Web Store One Stop Support form (https://support.google.com/chrome_webstore/contact/one_stop_support, the "badge / featuring" option) once 3.1.0 is live and its new listing images are published. Chrome staff review by hand, usually within about two weeks, and don't share reasons for a decline; a declined item may have to wait before trying again, so nominate only after the release checklist passes on real Instagram. Ready to paste:
 
 > Hello Chrome Web Store team,
 >

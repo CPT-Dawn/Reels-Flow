@@ -14,7 +14,8 @@
     "lint:firefox": "web-ext lint --source-dir .output/firefox-mv3",
     "typecheck": "wxt prepare && tsc --noEmit",
     "test": "vitest run",
-    "postinstall": "wxt prepare"
+    "postinstall": "wxt prepare",
+    "store-assets": "bun run build:chrome && bun scripts/store-assets/capture.ts && bun scripts/store-assets/shots.ts"
   },
   "devDependencies": {
     "@vitest/browser-playwright": "5.0.5",
