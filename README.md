@@ -6,7 +6,7 @@
   <p><b>Watch Instagram Reels hands-free.</b></p>
 
   <p>
-    <img src="https://img.shields.io/badge/version-3.0.0-2EA043?style=for-the-badge" alt="Version 3.0.0">
+    <img src="https://img.shields.io/badge/version-3.1.0-2EA043?style=for-the-badge" alt="Version 3.1.0">
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge" alt="MIT License"></a>
     <img src="https://img.shields.io/badge/browsers-Chrome%20%7C%20Edge%20%7C%20Firefox-5A5A5A?style=for-the-badge" alt="Chrome, Edge and Firefox">
   </p>
@@ -53,6 +53,10 @@ bun run zip   # Chrome and Firefox packages, plus the Firefox source bundle, in 
 ```
 
 `bun run dev` (Chrome) and `bun run dev:firefox` run a development build. Before a release, run the [release checklist](docs/release/checklist.md).
+
+## Changelog
+
+What changed in each version: [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 
