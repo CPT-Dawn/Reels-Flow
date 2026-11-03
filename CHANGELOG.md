@@ -2,7 +2,7 @@
 
 All notable changes to Reels Flow are recorded here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.1.0] - Unreleased
+## [3.1.0] - 2026-11-04
 
 ### Added
 
@@ -13,6 +13,7 @@ All notable changes to Reels Flow are recorded here. The format follows [Keep a 
 
 - The Auto-Scroll card in the Popup uses a deeper coral-to-amber glow, solid white text, a darker key cap and a smoked switch track, so all its text meets WCAG AA contrast (4.5:1 or more) in light and dark mode.
 - Privacy wording in the README and store listing now says exactly what happens: Reels Flow collects nothing and sends nothing to anyone, and your settings sync through your own browser account only when browser sync is on.
+- New store images: five screenshots per store, a small promo tile and a marquee, generated from the real extension by `bun run store-assets`.
 - Store listing rewritten for 3.1.0: How to start steps, one category, help and privacy policy links, and a fuller host-access justification.
 
 ## [3.0.0] - 2026-10-31
@@ -40,5 +41,5 @@ A full rewrite in TypeScript on WXT, one codebase for Chrome and Firefox.
 
 - Zero telemetry: no analytics, error reports or usage counts.
 
-[3.1.0]: https://github.com/CPT-Dawn/Reels-Flow/compare/v3.0.0...HEAD
+[3.1.0]: https://github.com/CPT-Dawn/Reels-Flow/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/CPT-Dawn/Reels-Flow/releases/tag/v3.0.0
