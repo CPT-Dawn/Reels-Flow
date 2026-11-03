@@ -23,6 +23,15 @@ describe('settings store', () => {
     });
   });
 
+  // Syncing across the viewer's own browsers is a feature, and the store
+  // listing says so (docs/release/store-listing.md).
+  it("keeps settings in synced storage, which follows the viewer's own browser account", async () => {
+    await createSettingsStore().set({ autoScroll: false });
+
+    expect(await fakeBrowser.storage.sync.get()).toEqual({ autoScroll: false });
+    expect(await fakeBrowser.storage.local.get()).toEqual({});
+  });
+
   it('keeps a change and leaves the other settings at their defaults', async () => {
     const settings = createSettingsStore();
 

@@ -37,7 +37,7 @@ Reels Flow is not listed on Microsoft Edge Add-ons; Edge runs the Chrome Web Sto
 
 ## Privacy
 
-Reels Flow collects no data at all: no analytics, no error reports, no usage counts. Your settings and the Reels watched count stay in your browser. It asks only for the `storage` permission and access to www.instagram.com. See [ADR 0003](docs/adr/0003-zero-telemetry.md).
+Reels Flow collects nothing and sends nothing to anyone: no analytics, no error reports, no usage counts. Your settings are kept in your browser's synced extension storage, so when browser sync is on, your browser carries them to your other browsers through your own browser account (your Google or Mozilla account); Reels Flow never sees them. The Reels watched count and the Popup's notes (What's new, the First-run Tip) stay on this device. It asks only for the `storage` permission and access to www.instagram.com. See [ADR 0003](docs/adr/0003-zero-telemetry.md).
 
 Found a problem? Use **Report a problem** in the Popup, or visit [reelsflow.cptdawn.dev/report](https://reelsflow.cptdawn.dev/report).
 
