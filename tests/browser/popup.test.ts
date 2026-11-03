@@ -476,3 +476,71 @@ describe('Shortcuts', () => {
     await expect.element(shortcut('Auto-Scroll on/off')).toHaveTextContent('K');
   });
 });
+
+describe('Auto-Scroll card contrast', () => {
+  type RGBA = [number, number, number, number];
+
+  /** Every colour in a computed CSS value, as [r, g, b, alpha]. */
+  const colours = (value: string): RGBA[] =>
+    [...value.matchAll(/rgba?\(([^)]+)\)/g)].map((match) => {
+      const [r, g, b, a = 1] = match[1]!.split(/[\s,/]+/).filter(Boolean).map(Number);
+      return [r!, g!, b!, a];
+    });
+
+  /** `top` laid over the opaque `bottom`. */
+  const over = ([r, g, b, a]: RGBA, bottom: RGBA): RGBA => [
+    r * a + bottom[0] * (1 - a),
+    g * a + bottom[1] * (1 - a),
+    b * a + bottom[2] * (1 - a),
+    1,
+  ];
+
+  const luminance = ([r, g, b]: RGBA) => {
+    const linear = (channel: number) => {
+      const c = channel / 255;
+      return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    };
+    return 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b);
+  };
+
+  /** The WCAG 2 contrast ratio between two opaque colours. */
+  const contrast = (a: RGBA, b: RGBA) => {
+    const [light, dark] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+    return (light! + 0.05) / (dark! + 0.05);
+  };
+
+  /**
+   * The lowest contrast of any text on the card, taken against every stop of
+   * its glow with the sheen's brightest point on top: the worst place the
+   * text could land.
+   */
+  const lowestContrast = () => {
+    const hero = document.querySelector('.rf-hero')!;
+    const stops = colours(getComputedStyle(hero, '::before').backgroundImage);
+    const sheen = colours(getComputedStyle(hero, '::after').backgroundImage)
+      .filter(([r, g, b]) => r === 255 && g === 255 && b === 255)
+      .reduce((brightest, [, , , a]) => Math.max(brightest, a), 0);
+    const texts = [...hero.querySelectorAll('.rf-hero-title, .rf-hero-status, .rf-stat-count, .rf-stat-label, .rf-key-hint')];
+    expect(stops.length).toBeGreaterThan(1);
+    return Math.min(
+      ...stops.flatMap((stop) => {
+        const behind = over([255, 255, 255, sheen], stop);
+        return texts.map((text) => {
+          // The key hint draws its own cap behind its letter.
+          const cap = colours(getComputedStyle(text).backgroundColor)[0];
+          const under = cap ? over(cap, behind) : behind;
+          return contrast(over(colours(getComputedStyle(text).color)[0]!, under), under);
+        });
+      }),
+    );
+  };
+
+  it('keeps every text on the glowing card at WCAG AA, 4.5:1 or more', async () => {
+    openPopup({ settings: createTestSettingsStore({ autoScroll: true }) });
+    await expect.element(page.getByRole('switch', { name: 'Auto-Scroll' })).toBeChecked();
+    await expect.element(page.getByRole('status', { name: 'Reels watched this session' })).toHaveTextContent('0');
+
+    // Polled, as the text eases to white once Auto-Scroll shows as on.
+    await expect.poll(lowestContrast, { timeout: 2000 }).toBeGreaterThanOrEqual(4.5);
+  });
+});

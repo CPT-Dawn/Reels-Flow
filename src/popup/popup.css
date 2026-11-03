@@ -5,6 +5,16 @@
   color-scheme: light dark;
   --rf-glow: linear-gradient(135deg, #ff3b6b 0%, #ff6a3d 55%, #ffb938 100%);
   --rf-glow-flat: #ff5a4a;
+  /* The same glow, deepened so white text on the Auto-Scroll card reads at
+     WCAG AA (4.5:1) wherever it falls. Worst case, white over each stop with
+     the sheen's brightest point on top (sheen 0.08): #d6124a 4.81:1,
+     #c2380f 4.80:1, #ad4f00 4.66:1 (5.19, 5.43 and 5.39 without the sheen).
+     Between stops the blend is never lighter than the lighter stop. The
+     bright glow it replaces gave white 3.45, 2.85 and 1.71:1, and the 86%
+     white labels as little as 1.36:1 under the old 0.35 sheen. The card is
+     the same in light and dark mode, so these hold in both. */
+  --rf-glow-deep: linear-gradient(135deg, #d6124a 0%, #c2380f 55%, #ad4f00 100%);
+  --rf-glow-deep-start: #d6124a;
   --rf-canvas: #f3f3f6;
   --rf-surface: #ffffff;
   --rf-sunken: #ececf1;
@@ -15,7 +25,7 @@
   --rf-switch-off: #d9d8df;
   --rf-knob-shadow: 0 1px 2px rgba(23, 21, 28, 0.18), 0 2px 6px rgba(23, 21, 28, 0.12);
   --rf-lift: 0 1px 2px rgba(23, 21, 28, 0.06), 0 8px 24px -12px rgba(23, 21, 28, 0.18);
-  --rf-hero-glow: 0 12px 32px -14px rgba(255, 74, 74, 0.7);
+  --rf-hero-glow: 0 12px 32px -14px rgba(214, 18, 74, 0.6);
   --rf-error: #d8372a;
   --rf-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --rf-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -33,7 +43,7 @@
     --rf-switch-off: #3a3741;
     --rf-knob-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3);
     --rf-lift: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
-    --rf-hero-glow: 0 14px 36px -16px rgba(255, 74, 74, 0.55);
+    --rf-hero-glow: 0 14px 36px -16px rgba(214, 18, 74, 0.5);
     --rf-error: #ff7a6b;
   }
 }
@@ -192,12 +202,13 @@ input {
 }
 
 .rf-hero::before {
-  background: var(--rf-glow);
+  background: var(--rf-glow-deep);
 }
 
-/* A sheen across the top of the glow, like the icon's glass. */
+/* A sheen across the top of the glow, like the icon's glass. Kept faint:
+   any brighter and the text over it drops below 4.5:1 (see --rf-glow-deep). */
 .rf-hero::after {
-  background: radial-gradient(120% 80% at 15% 0%, rgba(255, 255, 255, 0.35), transparent 60%);
+  background: radial-gradient(120% 80% at 15% 0%, rgba(255, 255, 255, 0.08), transparent 60%);
 }
 
 .rf-hero.rf-on {
@@ -252,7 +263,8 @@ input {
 }
 
 .rf-on .rf-hero-status {
-  color: rgba(255, 255, 255, 0.86);
+  /* Solid white: translucent white over the glow fell below 4.5:1. */
+  color: #ffffff;
 }
 
 /* A window onto a strip of Reels: every few seconds the next one slides up,
@@ -295,6 +307,12 @@ input {
 
 .rf-on .rf-flow-reel {
   background: rgba(255, 255, 255, 0.92);
+}
+
+/* The playing bar takes the deep glow's rose, which stands out from the white
+   Reel (4.7:1) where the brighter coral would wash out. */
+.rf-on .rf-flow-reel:first-child::after {
+  background: var(--rf-glow-deep-start);
 }
 
 .rf-flow-reel:first-child::after {
@@ -379,7 +397,8 @@ input {
 }
 
 .rf-on .rf-stat-label {
-  color: rgba(255, 255, 255, 0.86);
+  /* Solid white, like the status: at 12.5px it needs the full 4.5:1. */
+  color: #ffffff;
 }
 
 /* The other controls, together in one quiet panel. */
@@ -456,8 +475,9 @@ input {
 }
 
 .rf-on .rf-key-hint {
+  /* A darker cap, not a lighter one: white on it reads at 6.6:1 or more. */
   border-color: rgba(255, 255, 255, 0.3);
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.2);
   color: #ffffff;
 }
 
@@ -520,18 +540,20 @@ input {
   cursor: default;
 }
 
-/* On the glowing card the switch is frosted glass instead. */
+/* On the glowing card the switch is smoked glass instead, so the white knob
+   stands out from its track (6.8:1 or more) rather than melting into it. */
 .rf-on .rf-switch-on-media::before {
   opacity: 0;
 }
 
 .rf-on .rf-switch-on-media {
-  background: rgba(255, 255, 255, 0.3);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+  background: rgba(0, 0, 0, 0.22);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
 }
 
 .rf-on .rf-switch-on-media:focus-visible,
 .rf-on .rf-hero-toggle :focus-visible {
+  /* White on the deep glow: 4.66:1 at worst, above the 3:1 a focus ring needs. */
   outline-color: #ffffff;
 }
 
