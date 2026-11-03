@@ -6,7 +6,7 @@
   <p><b>Watch Instagram Reels hands-free.</b></p>
 
   <p>
-    <img src="https://img.shields.io/badge/version-3.0.0-2EA043?style=for-the-badge" alt="Version 3.0.0">
+    <img src="https://img.shields.io/badge/version-3.1.0-2EA043?style=for-the-badge" alt="Version 3.1.0">
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge" alt="MIT License"></a>
     <img src="https://img.shields.io/badge/browsers-Chrome%20%7C%20Edge%20%7C%20Firefox-5A5A5A?style=for-the-badge" alt="Chrome, Edge and Firefox">
   </p>
@@ -37,7 +37,7 @@ Reels Flow is not listed on Microsoft Edge Add-ons; Edge runs the Chrome Web Sto
 
 ## Privacy
 
-Reels Flow collects no data at all: no analytics, no error reports, no usage counts. Your settings and the Reels watched count stay in your browser. It asks only for the `storage` permission and access to www.instagram.com. See [ADR 0003](docs/adr/0003-zero-telemetry.md).
+Reels Flow collects nothing and sends nothing to anyone: no analytics, no error reports, no usage counts. Your settings are kept in your browser's synced extension storage, so when browser sync is on, your browser carries them to your other browsers through your own browser account (your Google or Mozilla account); Reels Flow never sees them. The Reels watched count and the Popup's notes (What's new, the First-run Tip) stay on this device. It asks only for the `storage` permission and access to www.instagram.com. See [ADR 0003](docs/adr/0003-zero-telemetry.md).
 
 Found a problem? Use **Report a problem** in the Popup, or visit [reelsflow.cptdawn.dev/report](https://reelsflow.cptdawn.dev/report).
 
@@ -53,6 +53,10 @@ bun run zip   # Chrome and Firefox packages, plus the Firefox source bundle, in 
 ```
 
 `bun run dev` (Chrome) and `bun run dev:firefox` run a development build. Before a release, run the [release checklist](docs/release/checklist.md).
+
+## Changelog
+
+What changed in each version: [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 

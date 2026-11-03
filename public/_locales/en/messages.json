@@ -139,6 +139,32 @@
     "message": "Support Reels Flow",
     "description": "Popup footer link to the Support Page, where a viewer can choose to donate. Shown after a heart."
   },
+  "popupOpenReelsFeedText": {
+    "message": "Reels Flow works on Instagram Reels",
+    "description": "Popup card shown when the current tab is not the Reels Feed (instagram.com/reels/), the only place Reels Flow acts. Keep \"Instagram Reels\" as the name of Instagram's page; never suggest Instagram made Reels Flow."
+  },
+  "popupOpenReelsFeed": {
+    "message": "Open Reels",
+    "description": "Button on the Popup card shown away from the Reels Feed: opens instagram.com/reels/, in the current Instagram tab or a new tab."
+  },
+  "popupFirstRunTip": {
+    "message": "Open Instagram Reels and Reels Flow moves on when each Reel ends. Press $KEY$ to switch Auto-Scroll.",
+    "description": "First-run Tip at the top of the Popup, shown until the viewer closes it. The key is the viewer's own Shortcut for Auto-Scroll on/off.",
+    "placeholders": {
+      "key": {
+        "content": "$1",
+        "example": "A"
+      }
+    }
+  },
+  "popupFirstRunTipLabel": {
+    "message": "Tip",
+    "description": "What screen readers call the First-run Tip in the Popup."
+  },
+  "popupFirstRunTipDismiss": {
+    "message": "Dismiss tip",
+    "description": "What screen readers call the close (×) button on the Popup's First-run Tip. Once closed, the Tip does not come back."
+  },
   "reelControlName": {
     "message": "Auto-Scroll",
     "description": "What screen readers call the Reel Control, the Auto-Scroll on/off button beside each Reel."

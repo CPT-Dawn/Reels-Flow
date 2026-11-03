@@ -6,12 +6,23 @@ import type { Clock } from './engine';
  */
 const CHECK_INTERVAL = 500;
 
+/** Where the Reels Feed lives. */
+export const INSTAGRAM_ORIGIN = 'https://www.instagram.com';
+
+/**
+ * The Reels Feed's own address, which the Popup opens for a viewer who isn't
+ * there. It is Instagram's page, not one of ours (ADR 0002 covers the Reels
+ * Flow website): it is where Reels Flow acts at all, so if Instagram moves it,
+ * `isReelsFeed` has to change too, in the same update.
+ */
+export const REELS_FEED_URL = `${INSTAGRAM_ORIGIN}/reels/`;
+
 /**
  * Whether `pathname` is the Reels Feed: /reels/, or /reels/<Reel>/ as
  * Instagram shows it while the Reels Feed is scrolled. Not a single Reel page
  * (/reel/<Reel>/) or an audio page (/reels/audio/<id>/).
  */
-function isReelsFeed(pathname: string) {
+export function isReelsFeed(pathname: string) {
   return /^\/reels(\/[^/]+)?\/?$/.test(pathname);
 }
 

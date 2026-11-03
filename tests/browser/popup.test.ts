@@ -3,6 +3,7 @@ import { page, userEvent } from 'vitest/browser';
 import { mountPopup, type PopupOptions } from '@/popup/popup';
 import { DEFAULT_SETTINGS, type Settings, type SettingsStore } from '@/settings/settings';
 import type { WhatsNew } from '@/lifecycle/whats-new';
+import type { FirstRunTip } from '@/lifecycle/first-run-tip';
 import { createTestSessionStore } from './support/session';
 import { createTestSettingsStore } from './support/settings';
 
@@ -37,8 +38,20 @@ function openPopup(options: Partial<PopupOptions> & { settings: SettingsStore })
     version: '3.0.0',
     browser: 'chrome',
     whatsNew: whatsNewFlag(false),
+    // Most tests open the Popup over the Reels Feed, with the Tip long closed.
+    firstRunTip: firstRunTipFlag(true),
+    activeTab: async () => ({ id: 1, url: 'https://www.instagram.com/reels/' }),
+    openTab: async () => {},
     ...options,
   });
+}
+
+/** An in-memory First-run Tip flag. */
+function firstRunTipFlag(dismissed: boolean): FirstRunTip {
+  return {
+    isDismissed: async () => dismissed,
+    dismiss: async () => void (dismissed = true),
+  };
 }
 
 /** An in-memory What's new flag, as an update would leave it. */
@@ -474,5 +487,186 @@ describe('Shortcuts', () => {
     await settings.set({ shortcuts: { ...DEFAULT_SETTINGS.shortcuts, toggleAutoScroll: 'k' } });
 
     await expect.element(shortcut('Auto-Scroll on/off')).toHaveTextContent('K');
+  });
+});
+
+describe('Auto-Scroll card contrast', () => {
+  type RGBA = [number, number, number, number];
+
+  /** Every colour in a computed CSS value, as [r, g, b, alpha]. */
+  const colours = (value: string): RGBA[] =>
+    [...value.matchAll(/rgba?\(([^)]+)\)/g)].map((match) => {
+      const [r, g, b, a = 1] = match[1]!.split(/[\s,/]+/).filter(Boolean).map(Number);
+      return [r!, g!, b!, a];
+    });
+
+  /** `top` laid over the opaque `bottom`. */
+  const over = ([r, g, b, a]: RGBA, bottom: RGBA): RGBA => [
+    r * a + bottom[0] * (1 - a),
+    g * a + bottom[1] * (1 - a),
+    b * a + bottom[2] * (1 - a),
+    1,
+  ];
+
+  const luminance = ([r, g, b]: RGBA) => {
+    const linear = (channel: number) => {
+      const c = channel / 255;
+      return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    };
+    return 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b);
+  };
+
+  /** The WCAG 2 contrast ratio between two opaque colours. */
+  const contrast = (a: RGBA, b: RGBA) => {
+    const [light, dark] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+    return (light! + 0.05) / (dark! + 0.05);
+  };
+
+  /**
+   * The lowest contrast of any text on the card, taken against every stop of
+   * its glow with the sheen's brightest point on top: the worst place the
+   * text could land.
+   */
+  const lowestContrast = () => {
+    const hero = document.querySelector('.rf-hero')!;
+    const stops = colours(getComputedStyle(hero, '::before').backgroundImage);
+    const sheen = colours(getComputedStyle(hero, '::after').backgroundImage)
+      .filter(([r, g, b]) => r === 255 && g === 255 && b === 255)
+      .reduce((brightest, [, , , a]) => Math.max(brightest, a), 0);
+    const texts = [...hero.querySelectorAll('.rf-hero-title, .rf-hero-status, .rf-stat-count, .rf-stat-label, .rf-key-hint')];
+    expect(stops.length).toBeGreaterThan(1);
+    return Math.min(
+      ...stops.flatMap((stop) => {
+        const behind = over([255, 255, 255, sheen], stop);
+        return texts.map((text) => {
+          // The key hint draws its own cap behind its letter.
+          const cap = colours(getComputedStyle(text).backgroundColor)[0];
+          const under = cap ? over(cap, behind) : behind;
+          return contrast(over(colours(getComputedStyle(text).color)[0]!, under), under);
+        });
+      }),
+    );
+  };
+
+  it('keeps every text on the glowing card at WCAG AA, 4.5:1 or more', async () => {
+    openPopup({ settings: createTestSettingsStore({ autoScroll: true }) });
+    await expect.element(page.getByRole('switch', { name: 'Auto-Scroll' })).toBeChecked();
+    await expect.element(page.getByRole('status', { name: 'Reels watched this session' })).toHaveTextContent('0');
+
+    // Polled, as the text eases to white once Auto-Scroll shows as on.
+    await expect.poll(lowestContrast, { timeout: 2000 }).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+describe('Open the Reels Feed', () => {
+  const card = () => page.getByRole('region', { name: 'Reels Flow works on Instagram Reels' });
+  const openReels = () => page.getByRole('button', { name: 'Open Reels' });
+
+  /** Opens the Popup over a tab like `tab`, noting every tab it opens. */
+  function openOver(tab: { id?: number; url?: string } | undefined) {
+    const opened: { url: string; tabId?: number }[] = [];
+    openPopup({
+      settings: createTestSettingsStore(),
+      activeTab: async () => tab,
+      openTab: async (url, tabId) => void opened.push({ url, tabId }),
+    });
+    return opened;
+  }
+
+  it('opens the Reels Feed in a new tab from a page that is not Instagram', async () => {
+    // Without host access to it, the tab's address is unknown.
+    const opened = openOver({ id: 4 });
+    await expect.element(card()).toBeVisible();
+
+    await openReels().click();
+
+    expect(opened).toEqual([{ url: 'https://www.instagram.com/reels/', tabId: undefined }]);
+    await expect.element(card()).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ['the home feed', 'https://www.instagram.com/'],
+    ['a single Reel page', 'https://www.instagram.com/reel/FIXTURE0001/'],
+    ['an audio page', 'https://www.instagram.com/reels/audio/123/'],
+  ])('takes the Instagram tab on %s to the Reels Feed', async (_, url) => {
+    const opened = openOver({ id: 7, url });
+
+    await openReels().click();
+
+    expect(opened).toEqual([{ url: 'https://www.instagram.com/reels/', tabId: 7 }]);
+  });
+
+  it('opens a new tab when there is no tab to look at', async () => {
+    const opened = openOver(undefined);
+
+    await openReels().click();
+
+    expect(opened).toEqual([{ url: 'https://www.instagram.com/reels/', tabId: undefined }]);
+  });
+
+  it.each([
+    ['/reels/', 'https://www.instagram.com/reels/'],
+    ['a Reel in the Reels Feed', 'https://www.instagram.com/reels/FIXTURE0001/'],
+  ])('stays out of the way on %s', async (_, url) => {
+    openOver({ id: 7, url });
+    await expect.element(page.getByRole('switch', { name: 'Auto-Scroll' })).toBeEnabled();
+
+    await expect.element(card()).not.toBeInTheDocument();
+  });
+
+  it('works by keyboard', async () => {
+    const opened = openOver({ id: 4 });
+    await expect.element(card()).toBeVisible();
+
+    (openReels().element() as HTMLElement).focus();
+    await userEvent.keyboard('{Enter}');
+
+    expect(opened).toHaveLength(1);
+  });
+});
+
+describe('First-run Tip', () => {
+  const tip = () => page.getByRole('complementary', { name: 'Tip' });
+  const dismiss = () => page.getByRole('button', { name: 'Dismiss tip' });
+
+  it("names the viewer's own Auto-Scroll Shortcut", async () => {
+    openPopup({
+      settings: createTestSettingsStore({ shortcuts: { ...DEFAULT_SETTINGS.shortcuts, toggleAutoScroll: 'q' } }),
+      firstRunTip: firstRunTipFlag(false),
+    });
+
+    await expect
+      .element(tip())
+      .toHaveTextContent('Open Instagram Reels and Reels Flow moves on when each Reel ends. Press Q to switch Auto-Scroll.');
+  });
+
+  it('follows the Shortcut changed in another tab', async () => {
+    const settings = createTestSettingsStore();
+    openPopup({ settings, firstRunTip: firstRunTipFlag(false) });
+    await expect.poll(() => tip().query()?.textContent).toContain('Press A to');
+
+    await settings.set({ shortcuts: { ...DEFAULT_SETTINGS.shortcuts, toggleAutoScroll: ' ' } });
+
+    await expect.poll(() => tip().query()?.textContent).toContain('Press Space to');
+  });
+
+  it('closes for good by keyboard, leaving focus on Auto-Scroll', async () => {
+    const firstRunTip = firstRunTipFlag(false);
+    openPopup({ settings: createTestSettingsStore(), firstRunTip });
+    await expect.element(tip()).toBeVisible();
+
+    (dismiss().element() as HTMLElement).focus();
+    await userEvent.keyboard('{Enter}');
+
+    await expect.element(tip()).not.toBeInTheDocument();
+    await expect.element(page.getByRole('switch', { name: 'Auto-Scroll' })).toHaveFocus();
+    expect(await firstRunTip.isDismissed()).toBe(true);
+  });
+
+  it('stays closed once dismissed', async () => {
+    openPopup({ settings: createTestSettingsStore(), firstRunTip: firstRunTipFlag(true) });
+    await expect.element(page.getByRole('switch', { name: 'Auto-Scroll' })).toBeEnabled();
+
+    await expect.element(tip()).not.toBeInTheDocument();
   });
 });
