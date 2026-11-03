@@ -9,6 +9,7 @@ import {
 } from '@/settings/settings';
 import { shortcutKey, shortcutKeyName } from '@/settings/shortcut-key';
 import type { WhatsNew } from '@/lifecycle/whats-new';
+import { INSTAGRAM_ORIGIN, isReelsFeed, REELS_FEED_URL } from '@/engine/route';
 import { REPORT_PAGE, SUPPORT_PAGE, WELCOME_PAGE } from '@/site';
 import './popup.css';
 
@@ -45,7 +46,9 @@ export type PopupMessage =
   | 'shortcutToggleSpeed'
   | 'popupPressKey'
   | 'popupKeyTaken'
-  | 'popupResetShortcuts';
+  | 'popupResetShortcuts'
+  | 'popupOpenReelsFeedText'
+  | 'popupOpenReelsFeed';
 
 type LimitKind = SessionLimit['kind'];
 
@@ -89,6 +92,14 @@ export type PopupOptions = {
   browser: string;
   /** Whether an update brought news the viewer hasn't opened yet. */
   whatsNew: WhatsNew;
+  /**
+   * The tab the Popup opened over, if any. Its `url` is known only on
+   * Instagram, where Reels Flow has host access, and undefined everywhere
+   * else: no `tabs` permission needed.
+   */
+  activeTab: () => Promise<{ id?: number; url?: string } | undefined>;
+  /** Shows `url` in the tab `tabId`, or in a new tab when `tabId` is undefined. */
+  openTab: (url: string, tabId?: number) => Promise<void>;
 };
 
 /** How a speed reads to the viewer: 1.5 as 1.5×. */
@@ -99,8 +110,21 @@ const speedName = (speed: number) => `${speed}×`;
  */
 export function mountPopup(
   document: Document,
-  { settings, session, now = Date.now, message, version, browser, whatsNew }: PopupOptions,
+  {
+    settings,
+    session,
+    now = Date.now,
+    message,
+    version,
+    browser,
+    whatsNew,
+    activeTab,
+    openTab,
+  }: PopupOptions,
 ): () => void {
+  /** Whether the Popup is still up, so late answers don't build into a closed one. */
+  let mounted = true;
+
   const element = <K extends keyof HTMLElementTagNameMap>(
     tag: K,
     className: string,
@@ -166,6 +190,33 @@ export function mountPopup(
     element('h1', 'rf-brand-name', message('extensionShortName')),
     whatsNewLink,
   );
+
+  // Away from the Reels Feed, the way there: every control below acts only on it.
+  /** The Instagram tab to take to the Reels Feed, or undefined for a new tab. */
+  let instagramTab: number | undefined;
+  const openReelsFeed = element('button', 'rf-open-reels-button', message('popupOpenReelsFeed'));
+  openReelsFeed.type = 'button';
+  openReelsFeed.addEventListener('click', () => {
+    openReelsCard.remove();
+    void openTab(REELS_FEED_URL, instagramTab);
+  });
+  const openReelsCard = element(
+    'section',
+    'rf-open-reels',
+    element('p', 'rf-open-reels-text', message('popupOpenReelsFeedText')),
+    openReelsFeed,
+  );
+  openReelsCard.setAttribute('aria-label', message('popupOpenReelsFeedText'));
+  void activeTab()
+    .then((tab) => {
+      const url = tab?.url ? URL.parse(tab.url) : null;
+      const onInstagram = url?.origin === INSTAGRAM_ORIGIN;
+      if (!mounted || (onInstagram && isReelsFeed(url.pathname))) return;
+      instagramTab = onInstagram ? tab?.id : undefined;
+      header.after(openReelsCard);
+    })
+    // Without the tab, say nothing rather than guess.
+    .catch(() => {});
 
   // Auto-Scroll: the one control the Popup is for, drawn as Reels flowing by.
   const autoScrollTitle = element('span', 'rf-hero-title', message('popupAutoScroll'));
@@ -597,6 +648,7 @@ export function mountPopup(
   });
 
   return () => {
+    mounted = false;
     unwatch();
     unwatchSession();
     popup.remove();

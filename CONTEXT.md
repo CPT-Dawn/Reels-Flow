@@ -70,6 +70,10 @@ _Avoid_: Hotkey, command, keybind
 The panel that opens from the extension's toolbar icon, and the only place to change settings: the everyday controls, the Preferred Speed, the Session Limit, the Shortcuts, the Session counter and the links. There is no separate settings page.
 _Avoid_: Dashboard, control center, menu, Settings Page, options page
 
+**Open Reels card**:
+The card at the top of the Popup when the current tab isn't the Reels Feed, with a button that goes there: in the current Instagram tab, or a new tab otherwise.
+_Avoid_: Banner, empty state
+
 **What's new**:
 The Popup link to news about recent versions. After an update it carries a dot until the viewer opens it; updates never open a tab on their own.
 _Avoid_: Changelog, release notes, update notification

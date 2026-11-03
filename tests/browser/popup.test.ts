@@ -37,6 +37,9 @@ function openPopup(options: Partial<PopupOptions> & { settings: SettingsStore })
     version: '3.0.0',
     browser: 'chrome',
     whatsNew: whatsNewFlag(false),
+    // Most tests open the Popup over the Reels Feed.
+    activeTab: async () => ({ id: 1, url: 'https://www.instagram.com/reels/' }),
+    openTab: async () => {},
     ...options,
   });
 }
@@ -542,5 +545,72 @@ describe('Auto-Scroll card contrast', () => {
 
     // Polled, as the text eases to white once Auto-Scroll shows as on.
     await expect.poll(lowestContrast, { timeout: 2000 }).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+describe('Open the Reels Feed', () => {
+  const card = () => page.getByRole('region', { name: 'Reels Flow works on Instagram Reels' });
+  const openReels = () => page.getByRole('button', { name: 'Open Reels' });
+
+  /** Opens the Popup over a tab like `tab`, noting every tab it opens. */
+  function openOver(tab: { id?: number; url?: string } | undefined) {
+    const opened: { url: string; tabId?: number }[] = [];
+    openPopup({
+      settings: createTestSettingsStore(),
+      activeTab: async () => tab,
+      openTab: async (url, tabId) => void opened.push({ url, tabId }),
+    });
+    return opened;
+  }
+
+  it('opens the Reels Feed in a new tab from a page that is not Instagram', async () => {
+    // Without host access to it, the tab's address is unknown.
+    const opened = openOver({ id: 4 });
+    await expect.element(card()).toBeVisible();
+
+    await openReels().click();
+
+    expect(opened).toEqual([{ url: 'https://www.instagram.com/reels/', tabId: undefined }]);
+    await expect.element(card()).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ['the home feed', 'https://www.instagram.com/'],
+    ['a single Reel page', 'https://www.instagram.com/reel/FIXTURE0001/'],
+    ['an audio page', 'https://www.instagram.com/reels/audio/123/'],
+  ])('takes the Instagram tab on %s to the Reels Feed', async (_, url) => {
+    const opened = openOver({ id: 7, url });
+
+    await openReels().click();
+
+    expect(opened).toEqual([{ url: 'https://www.instagram.com/reels/', tabId: 7 }]);
+  });
+
+  it('opens a new tab when there is no tab to look at', async () => {
+    const opened = openOver(undefined);
+
+    await openReels().click();
+
+    expect(opened).toEqual([{ url: 'https://www.instagram.com/reels/', tabId: undefined }]);
+  });
+
+  it.each([
+    ['/reels/', 'https://www.instagram.com/reels/'],
+    ['a Reel in the Reels Feed', 'https://www.instagram.com/reels/FIXTURE0001/'],
+  ])('stays out of the way on %s', async (_, url) => {
+    openOver({ id: 7, url });
+    await expect.element(page.getByRole('switch', { name: 'Auto-Scroll' })).toBeEnabled();
+
+    await expect.element(card()).not.toBeInTheDocument();
+  });
+
+  it('works by keyboard', async () => {
+    const opened = openOver({ id: 4 });
+    await expect.element(card()).toBeVisible();
+
+    (openReels().element() as HTMLElement).focus();
+    await userEvent.keyboard('{Enter}');
+
+    expect(opened).toHaveLength(1);
   });
 });
