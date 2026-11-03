@@ -3,6 +3,7 @@ import { page, userEvent } from 'vitest/browser';
 import { mountPopup, type PopupOptions } from '@/popup/popup';
 import { DEFAULT_SETTINGS, type Settings, type SettingsStore } from '@/settings/settings';
 import type { WhatsNew } from '@/lifecycle/whats-new';
+import type { FirstRunTip } from '@/lifecycle/first-run-tip';
 import { createTestSessionStore } from './support/session';
 import { createTestSettingsStore } from './support/settings';
 
@@ -37,11 +38,20 @@ function openPopup(options: Partial<PopupOptions> & { settings: SettingsStore })
     version: '3.0.0',
     browser: 'chrome',
     whatsNew: whatsNewFlag(false),
-    // Most tests open the Popup over the Reels Feed.
+    // Most tests open the Popup over the Reels Feed, with the Tip long closed.
+    firstRunTip: firstRunTipFlag(true),
     activeTab: async () => ({ id: 1, url: 'https://www.instagram.com/reels/' }),
     openTab: async () => {},
     ...options,
   });
+}
+
+/** An in-memory First-run Tip flag. */
+function firstRunTipFlag(dismissed: boolean): FirstRunTip {
+  return {
+    isDismissed: async () => dismissed,
+    dismiss: async () => void (dismissed = true),
+  };
 }
 
 /** An in-memory What's new flag, as an update would leave it. */
@@ -612,5 +622,51 @@ describe('Open the Reels Feed', () => {
     await userEvent.keyboard('{Enter}');
 
     expect(opened).toHaveLength(1);
+  });
+});
+
+describe('First-run Tip', () => {
+  const tip = () => page.getByRole('complementary', { name: 'Tip' });
+  const dismiss = () => page.getByRole('button', { name: 'Dismiss tip' });
+
+  it("names the viewer's own Auto-Scroll Shortcut", async () => {
+    openPopup({
+      settings: createTestSettingsStore({ shortcuts: { ...DEFAULT_SETTINGS.shortcuts, toggleAutoScroll: 'q' } }),
+      firstRunTip: firstRunTipFlag(false),
+    });
+
+    await expect
+      .element(tip())
+      .toHaveTextContent('Open Instagram Reels and Reels Flow moves on when each Reel ends. Press Q to switch Auto-Scroll.');
+  });
+
+  it('follows the Shortcut changed in another tab', async () => {
+    const settings = createTestSettingsStore();
+    openPopup({ settings, firstRunTip: firstRunTipFlag(false) });
+    await expect.poll(() => tip().query()?.textContent).toContain('Press A to');
+
+    await settings.set({ shortcuts: { ...DEFAULT_SETTINGS.shortcuts, toggleAutoScroll: ' ' } });
+
+    await expect.poll(() => tip().query()?.textContent).toContain('Press Space to');
+  });
+
+  it('closes for good by keyboard, leaving focus on Auto-Scroll', async () => {
+    const firstRunTip = firstRunTipFlag(false);
+    openPopup({ settings: createTestSettingsStore(), firstRunTip });
+    await expect.element(tip()).toBeVisible();
+
+    (dismiss().element() as HTMLElement).focus();
+    await userEvent.keyboard('{Enter}');
+
+    await expect.element(tip()).not.toBeInTheDocument();
+    await expect.element(page.getByRole('switch', { name: 'Auto-Scroll' })).toHaveFocus();
+    expect(await firstRunTip.isDismissed()).toBe(true);
+  });
+
+  it('stays closed once dismissed', async () => {
+    openPopup({ settings: createTestSettingsStore(), firstRunTip: firstRunTipFlag(true) });
+    await expect.element(page.getByRole('switch', { name: 'Auto-Scroll' })).toBeEnabled();
+
+    await expect.element(tip()).not.toBeInTheDocument();
   });
 });

@@ -9,6 +9,7 @@ import {
 } from '@/settings/settings';
 import { shortcutKey, shortcutKeyName } from '@/settings/shortcut-key';
 import type { WhatsNew } from '@/lifecycle/whats-new';
+import type { FirstRunTip } from '@/lifecycle/first-run-tip';
 import { INSTAGRAM_ORIGIN, isReelsFeed, REELS_FEED_URL } from '@/engine/route';
 import { REPORT_PAGE, SUPPORT_PAGE, WELCOME_PAGE } from '@/site';
 import './popup.css';
@@ -48,7 +49,10 @@ export type PopupMessage =
   | 'popupKeyTaken'
   | 'popupResetShortcuts'
   | 'popupOpenReelsFeedText'
-  | 'popupOpenReelsFeed';
+  | 'popupOpenReelsFeed'
+  | 'popupFirstRunTip'
+  | 'popupFirstRunTipLabel'
+  | 'popupFirstRunTipDismiss';
 
 type LimitKind = SessionLimit['kind'];
 
@@ -92,6 +96,8 @@ export type PopupOptions = {
   browser: string;
   /** Whether an update brought news the viewer hasn't opened yet. */
   whatsNew: WhatsNew;
+  /** Whether the viewer has closed the First-run Tip. */
+  firstRunTip: FirstRunTip;
   /**
    * The tab the Popup opened over, if any. Its `url` is known only on
    * Instagram, where Reels Flow has host access, and undefined everywhere
@@ -118,6 +124,7 @@ export function mountPopup(
     version,
     browser,
     whatsNew,
+    firstRunTip,
     activeTab,
     openTab,
   }: PopupOptions,
@@ -217,6 +224,33 @@ export function mountPopup(
     })
     // Without the tab, say nothing rather than guess.
     .catch(() => {});
+
+  // The First-run Tip: how Reels Flow starts, until the viewer closes it.
+  const tipText = element('p', 'rf-tip-text');
+  const tipClose = element('button', 'rf-tip-close');
+  tipClose.type = 'button';
+  tipClose.setAttribute('aria-label', message('popupFirstRunTipDismiss'));
+  const tip = element('aside', 'rf-tip', tipText, tipClose);
+  tip.setAttribute('aria-label', message('popupFirstRunTipLabel'));
+  /** Whether the Tip is still to show: unknown until its storage answers. */
+  let tipWanted: boolean | undefined;
+  /** Shows the Tip once both its storage and the Shortcut key are known. */
+  const showTip = () => {
+    if (!tipWanted || !current) return;
+    tipText.textContent = message('popupFirstRunTip', [shortcutKeyName(current.shortcuts.toggleAutoScroll)]);
+    if (!tip.isConnected) hero.after(tip);
+  };
+  tipClose.addEventListener('click', () => {
+    tipWanted = false;
+    tip.remove();
+    // Focus would otherwise fall to the page; land it on the control the Tip was about.
+    autoScroll.focus();
+    void firstRunTip.dismiss();
+  });
+  void firstRunTip.isDismissed().then((dismissed) => {
+    tipWanted = !dismissed;
+    if (mounted) showTip();
+  });
 
   // Auto-Scroll: the one control the Popup is for, drawn as Reels flowing by.
   const autoScrollTitle = element('span', 'rf-hero-title', message('popupAutoScroll'));
@@ -580,6 +614,7 @@ export function mountPopup(
     }
     autoScrollKey.textContent = shortcutKeyName(shortcuts.toggleAutoScroll);
     speedKey.textContent = shortcutKeyName(shortcuts.toggleSpeed);
+    showTip();
   };
 
   // The footer.

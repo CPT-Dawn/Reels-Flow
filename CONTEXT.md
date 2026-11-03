@@ -70,6 +70,10 @@ _Avoid_: Hotkey, command, keybind
 The panel that opens from the extension's toolbar icon, and the only place to change settings: the everyday controls, the Preferred Speed, the Session Limit, the Shortcuts, the Session counter and the links. There is no separate settings page.
 _Avoid_: Dashboard, control center, menu, Settings Page, options page
 
+**First-run Tip**:
+A short note in the Popup on how Reels Flow starts and which Shortcut switches Auto-Scroll, shown until the viewer closes it. Closing it is remembered on this device only.
+_Avoid_: Onboarding, tutorial, coach mark
+
 **Open Reels card**:
 The card at the top of the Popup when the current tab isn't the Reels Feed, with a button that goes there: in the current Instagram tab, or a new tab otherwise.
 _Avoid_: Banner, empty state
