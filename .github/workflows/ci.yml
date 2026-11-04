@@ -14,9 +14,38 @@ concurrency:
 
 jobs:
   check:
-    name: Typecheck, test and lint
+    name: Typecheck and Firefox lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: 1.4.4
+
+      # WXT and Vitest run on Node.js.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+
+      - run: bun install --frozen-lockfile
+
+      - run: bun run typecheck
+      - run: bun run build:firefox && bun run lint:firefox
+
+  test:
+    # The engine tests wait for real Reels to play out, so one runner takes
+    # about nine minutes. Shards run in parallel to keep a run to a few.
+    name: Tests (shard ${{ matrix.shard }}/4)
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -51,6 +80,4 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: bunx playwright install-deps chromium firefox
 
-      - run: bun run typecheck
-      - run: bun run test
-      - run: bun run build:firefox && bun run lint:firefox
+      - run: bun run test --shard=${{ matrix.shard }}/4
