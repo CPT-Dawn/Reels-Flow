@@ -15,7 +15,8 @@
     "typecheck": "wxt prepare && tsc --noEmit",
     "test": "vitest run",
     "postinstall": "wxt prepare",
-    "store-assets": "bun run build:chrome && bun scripts/store-assets/capture.ts && bun scripts/store-assets/shots.ts"
+    "store-assets": "bun run build:chrome && bun scripts/store-assets/capture.ts && bun scripts/store-assets/shots.ts",
+    "store-video": "bun run build:chrome && bun scripts/store-video/render.ts --jobs 5"
   },
   "devDependencies": {
     "@vitest/browser-playwright": "5.0.5",
