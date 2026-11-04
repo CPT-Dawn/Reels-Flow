@@ -52,7 +52,7 @@ bun run test
 bun run zip   # Chrome and Firefox packages, plus the Firefox source bundle, in .output/
 ```
 
-`bun run dev` (Chrome) and `bun run dev:firefox` run a development build. Before a release, run the [release checklist](docs/release/checklist.md).
+`bun run dev` (Chrome) and `bun run dev:firefox` run a development build. CI runs the same checks (typecheck, the tests in Chromium and Firefox, and `web-ext lint`) on every push to `main` and every pull request. Before a release, run the [release checklist](docs/release/checklist.md).
 
 ## Changelog
 
