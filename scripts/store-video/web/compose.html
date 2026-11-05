@@ -1,0 +1,138 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Reels Flow — store video</title>
+<link rel="stylesheet" href="compose.css">
+</head>
+<body>
+<div id="stage">
+  <div id="bg">
+    <div class="aura" id="a1"></div><div class="aura" id="a2"></div><div class="aura" id="a3"></div>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <!-- 1 · Intro -->
+  <div id="s1" class="scene">
+    <img id="s1-icon" class="app-icon" src="assets/Icon.svg" alt="">
+    <div id="s1-glow" class="bloom"></div>
+    <div id="s1-text" class="center-col">
+      <div class="h1 xl"><span class="ln"><span>Instagram Reels,</span></span><span class="ln"><span><em>hands&#8209;free.</em></span></span></div>
+      <p class="lede lg" data-lede>The next Reel starts the moment one ends.</p>
+    </div>
+  </div>
+
+  <!-- The browser, shared by the feed, Popup and Break Nudge scenes -->
+  <div id="world">
+    <div id="win" class="win chrome">
+      <div class="tabs"><div class="dots"><i></i><i></i><i></i></div>
+        <div class="tab"><span class="fav"></span>Reels • Instagram<span class="x">✕</span></div></div>
+      <div class="bar">
+        <div class="navi">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>
+        </div>
+        <div class="url"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 10V8a6 6 0 0 1 12 0v2"/><rect x="4" y="10" width="16" height="11" rx="2.5"/></svg>
+          <span><span class="host">instagram.com</span><span class="path">/reels/</span></span></div>
+        <div class="tools">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M10 3.5a2 2 0 0 1 4 0V5h4v4h-1.5a2 2 0 0 0 0 4H18v6h-6v-1.5a2 2 0 0 0-4 0V19H4v-6h1.5a2 2 0 0 0 0-4H4V5h6Z"/></svg>
+          <span class="ext" id="ext"><img src="assets/icon-128.png" alt=""></span>
+          <span class="me"></span>
+          <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
+        </div>
+      </div>
+      <div class="viewport">
+        <iframe id="feed" src="https://www.instagram.com/reels/FIXTURE0001/" scrolling="no"></iframe>
+        <div id="dim"></div>
+      </div>
+      <div id="ring"></div>
+      <div id="pop" class="popup"><iframe id="popup" src="/popup.html" scrolling="no"></iframe></div>
+    </div>
+  </div>
+
+  <!-- 2 · Auto-Scroll on the feed -->
+  <div id="cap2" class="cap left">
+    <span class="kicker"><i class="dot"></i>Auto-Scroll</span>
+    <div class="h1"><span class="ln"><span>When a Reel ends,</span></span><span class="ln"><span>the next one</span></span><span class="ln"><span><em>starts on its own.</em></span></span></div>
+    <p class="lede" data-lede>No tapping, no swiping. The feed keeps flowing while your hands are busy.</p>
+    <div class="counter" data-lede><span class="count"><span class="roll" id="roll"><b>24</b><b>25</b><b>26</b></span></span><span>Reels watched this session</span></div>
+  </div>
+
+  <!-- 3 · Hands busy -->
+  <div id="s3" class="scene">
+    <p id="s3-line" class="lede lg"><b>Your hands are busy.</b> Your feed isn’t.</p>
+    <div class="cards">
+      <figure class="reel-card"><div class="ph" style="background-image:url(photos/1080.jpg)"></div><figcaption>Cook.</figcaption></figure>
+      <figure class="reel-card"><div class="ph" style="background-image:url(photos/177.jpg)"></div><figcaption>Stretch.</figcaption></figure>
+      <figure class="reel-card"><div class="ph" style="background-image:url(photos/225.jpg)"></div><figcaption>Sit back.</figcaption></figure>
+    </div>
+  </div>
+
+  <!-- 4 · The Popup -->
+  <div id="cap4" class="cap right">
+    <span class="kicker"><i class="dot"></i>One Popup</span>
+    <div class="h1"><span class="ln"><span>Everything,</span></span><span class="ln"><span><em>one click away.</em></span></span></div>
+    <p class="lede" data-lede>Switch Auto-Scroll on, see how many Reels you’ve watched, and tune the rest from the toolbar.</p>
+  </div>
+
+  <!-- 5 · Speed -->
+  <div id="cap5" class="cap right">
+    <span class="kicker"><i class="dot"></i>Speed</span>
+    <div class="h1"><span class="ln"><span>Every Reel,</span></span><span class="ln"><span><em>at your pace.</em></span></span></div>
+    <p class="lede" data-lede>Choose from 0.5× to 3×, then switch it on or off whenever you like.</p>
+  </div>
+
+  <!-- 6 · Shortcuts -->
+  <div id="s6" class="scene">
+    <div id="cap6" class="cap center">
+      <span class="kicker"><i class="dot"></i>Shortcuts</span>
+      <div class="h1"><span class="ln"><span>One key <em>does it.</em></span></span></div>
+    </div>
+    <div class="keys">
+      <div class="keywrap" id="kA"><div class="key"><span>A</span></div><div class="klabel"><span class="k0">Auto-Scroll</span><span class="k1"><i class="dot"></i>Auto-Scroll on</span></div></div>
+      <div class="keywrap" id="kS"><div class="key"><span>S</span></div><div class="klabel"><span class="k0">Speed</span><span class="k1"><i class="dot"></i>Speed 2×</span></div></div>
+    </div>
+    <p id="s6-lede" class="lede">Single keys on the Reels Feed, never while you’re typing.<br>Change them any time in the Popup.</p>
+  </div>
+
+  <!-- 7 · Break Nudge -->
+  <div id="cap7" class="cap left">
+    <span class="kicker"><i class="dot"></i>Session Limit</span>
+    <div class="h1"><span class="ln"><span>A gentle nudge</span></span><span class="ln"><span><em>when it’s time.</em></span></span></div>
+    <p class="lede" data-lede>Set a limit in Reels or minutes. When you reach it, the Reel pauses and asks if you’d like a break. Off unless you set it.</p>
+  </div>
+
+  <!-- 8 · Privacy -->
+  <div id="s8" class="scene">
+    <div class="cap center" id="cap8">
+      <div class="h1"><span class="ln"><span>Private <em>by design.</em></span></span></div>
+    </div>
+    <div class="chips big">
+      <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.4 7.5 9.5 4.3-1.1 7.5-4.9 7.5-9.5V6Z"/><path d="m9 12 2 2 4-4"/></svg>Collects no data</span>
+      <span class="chip"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.2 6.3 6.3 2.2-6.3 2.2L12 19.5l-2.2-6.3L3.5 11l6.3-2.2Z"/></svg>Free</span>
+      <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 7-5 5 5 5M16 7l5 5-5 5"/></svg>Open source</span>
+    </div>
+    <p id="s8-lede" class="lede">No analytics, no accounts. Reels Flow sends nothing to anyone.</p>
+  </div>
+
+  <!-- 9 · End card -->
+  <div id="s9" class="scene">
+    <div id="s9-glow" class="bloom"></div>
+    <img id="s9-icon" class="app-icon" src="assets/Icon.svg" alt="">
+    <div id="s9-name" class="wordmark">Reels Flow</div>
+    <div id="s9-tag" class="tagline">Instagram Reels, <em>hands&#8209;free.</em></div>
+    <div id="s9-pills" class="chips">
+      <span class="chip">Chrome</span><span class="chip">Edge</span><span class="chip">Firefox</span>
+    </div>
+    <div id="s9-url" class="url-line">reelsflow.cptdawn.dev</div>
+    <div id="s9-legal" class="legal">An independent project. Not affiliated with Instagram or Meta.</div>
+  </div>
+
+  <svg id="cursor" viewBox="0 0 28 28"><path d="M6 3.5v18.6l4.7-4.4 3 6.8 3.3-1.4-3-6.7h6.5Z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round"/></svg>
+  <div id="vignette"></div>
+  <div id="dither"></div>
+</div>
+<script src="compose.js"></script>
+</body>
+</html>
