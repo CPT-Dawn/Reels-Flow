@@ -127,12 +127,11 @@ describe('links', () => {
       .toHaveAttribute('href', 'https://reelsflow.cptdawn.dev/report?version=3.1.2&browser=firefox');
   });
 
-  it('links to the Support Page', async () => {
+  it('offers no donation link', async () => {
     openPopup({ settings: createTestSettingsStore() });
 
-    await expect
-      .element(page.getByRole('link', { name: 'Support Reels Flow' }))
-      .toHaveAttribute('href', 'https://reelsflow.cptdawn.dev/support');
+    await expect.element(page.getByRole('link', { name: 'Report a problem' })).toBeVisible();
+    expect(document.querySelector('a[href*="/support"]')).toBeNull();
   });
 });
 

@@ -11,7 +11,7 @@ import { shortcutKey, shortcutKeyName } from '@/settings/shortcut-key';
 import type { WhatsNew } from '@/lifecycle/whats-new';
 import type { FirstRunTip } from '@/lifecycle/first-run-tip';
 import { INSTAGRAM_ORIGIN, isReelsFeed, REELS_FEED_URL } from '@/engine/route';
-import { REPORT_PAGE, SUPPORT_PAGE, WELCOME_PAGE } from '@/site';
+import { REPORT_PAGE, WELCOME_PAGE } from '@/site';
 import './popup.css';
 
 /** The keys in the message files the Popup shows. */
@@ -30,7 +30,6 @@ export type PopupMessage =
   | 'popupWhatsNew'
   | 'popupWhatsNewUnread'
   | 'popupReportProblem'
-  | 'popupSupport'
   | 'popupSessionLimit'
   | 'popupSessionLimitOff'
   | 'popupSessionLimitReels'
@@ -621,13 +620,10 @@ export function mountPopup(
   const reportUrl = new URL(REPORT_PAGE);
   reportUrl.searchParams.set('version', version);
   reportUrl.searchParams.set('browser', browser);
-  const heart = element('span', 'rf-heart', '♥');
-  heart.setAttribute('aria-hidden', 'true');
   const footer = element(
     'footer',
     'rf-footer',
     opensInNewTab(element('a', 'rf-report', message('popupReportProblem')), reportUrl.href),
-    opensInNewTab(element('a', 'rf-support', heart, message('popupSupport')), SUPPORT_PAGE),
   );
 
   const popup = element(

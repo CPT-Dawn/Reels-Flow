@@ -2,6 +2,12 @@
 
 All notable changes to Reels Flow are recorded here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.1] - 2026-11-06
+
+### Removed
+
+- The Popup's Support Reels Flow link. Reels Flow is free and takes no tips or donations, so the footer now holds just Report a problem.
+
 ## [3.1.0] - 2026-11-04
 
 ### Added
@@ -41,5 +47,6 @@ A full rewrite in TypeScript on WXT, one codebase for Chrome and Firefox.
 
 - Zero telemetry: no analytics, error reports or usage counts.
 
+[3.1.1]: https://github.com/CPT-Dawn/Reels-Flow/compare/v3.1.0...v3.1.1
 [3.1.0]: https://github.com/CPT-Dawn/Reels-Flow/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/CPT-Dawn/Reels-Flow/releases/tag/v3.0.0

@@ -135,10 +135,6 @@
     "message": "Report a problem",
     "description": "Popup footer link to the Report Page."
   },
-  "popupSupport": {
-    "message": "Support Reels Flow",
-    "description": "Popup footer link to the Support Page, where a viewer can choose to donate. Shown after a heart."
-  },
   "popupOpenReelsFeedText": {
     "message": "Reels Flow works on Instagram Reels",
     "description": "Popup card shown when the current tab is not the Reels Feed (instagram.com/reels/), the only place Reels Flow acts. Keep \"Instagram Reels\" as the name of Instagram's page; never suggest Instagram made Reels Flow."

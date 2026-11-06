@@ -4,5 +4,4 @@ const SITE = 'https://reelsflow.cptdawn.dev';
 
 export const WELCOME_PAGE = `${SITE}/welcome`;
 export const GOODBYE_PAGE = `${SITE}/goodbye`;
-export const SUPPORT_PAGE = `${SITE}/support`;
 export const REPORT_PAGE = `${SITE}/report`;

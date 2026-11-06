@@ -1,4 +1,4 @@
-# Store listing: Reels Flow 3.1.0
+# Store listing: Reels Flow 3.1.1
 
 Same text for the Chrome Web Store and Firefox Add-ons. Reels Flow is not listed on Edge Add-ons; Edge users install the Chrome Web Store version (ADR 0005). Always say "for Instagram"; never say or imply that Instagram or Meta made, endorses or supports Reels Flow, and don't use Instagram's logo or Reels glyph.
 
@@ -47,7 +47,7 @@ Website: https://reelsflow.cptdawn.dev
 ## URLs
 
 - Homepage: https://reelsflow.cptdawn.dev
-- Support: https://reelsflow.cptdawn.dev/report (the Report Page, where a viewer gets help by GitHub issue or plain message; `/support` is the Support Page for donations, not help. See `src/site.ts`.)
+- Support: https://reelsflow.cptdawn.dev/report (the Report Page, where a viewer gets help by GitHub issue or plain message; see `src/site.ts`.)
 - Privacy policy: https://reelsflow.cptdawn.dev/privacy
 
 ## Privacy practices and permissions
@@ -61,8 +61,8 @@ Website: https://reelsflow.cptdawn.dev
 
 ## Uploads
 
-- Chrome package: `.output/reels-flow-3.1.0-chrome.zip`
-- Firefox package: `.output/reels-flow-3.1.0-firefox.zip`, plus source bundle `.output/reels-flow-3.1.0-sources.zip` (build: `bun install && bun run build:firefox`)
+- Chrome package: `.output/reels-flow-3.1.1-chrome.zip`
+- Firefox package: `.output/reels-flow-3.1.1-firefox.zip`, plus source bundle `.output/reels-flow-3.1.1-sources.zip` (build: `bun install && bun run build:firefox`)
 
 ## Images
 

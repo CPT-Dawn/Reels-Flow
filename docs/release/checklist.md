@@ -40,7 +40,7 @@ Load the built package (`.output/chrome-mv3` in Chrome and Edge, or the Firefox 
 
 ## Popup links
 
-23. What's new, Report a problem and Support Reels Flow each open the right page on reelsflow.cptdawn.dev. The extensions page offers no Options/Preferences entry for Reels Flow.
+23. What's new and Report a problem each open the right page on reelsflow.cptdawn.dev, and the Popup offers no donation link. The extensions page offers no Options/Preferences entry for Reels Flow.
 24. Uninstall opens the Goodbye page.
 
 ## Store listing

@@ -84,10 +84,6 @@ _Avoid_: Changelog, release notes, update notification
 
 ### Outreach
 
-**Support Page**:
-The page on the Reels Flow website where a viewer can choose to donate. The extension only ever links here, never to a payment provider directly.
-_Avoid_: Donate link, tip jar
-
 **Welcome Page**:
 The page on the Reels Flow website opened once, right after a fresh install or an upgrade from 2.x (then showing what's new in v3). The Popup's What's new link also leads here.
 _Avoid_: Onboarding tab, landing page
