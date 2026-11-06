@@ -1,63 +1,94 @@
 <div align="center">
-  <img src="store assets/Icon.png" alt="Reels Flow icon" width="100" height="100" />
 
-  <h1>Reels Flow</h1>
+<img src="store%20assets/Icon.png" alt="" width="96" height="96" />
 
-  <p><b>Watch Instagram Reels hands-free.</b></p>
+# Reels Flow
 
-  <p>
-    <img src="https://img.shields.io/badge/version-3.1.0-2EA043?style=for-the-badge" alt="Version 3.1.0">
-    <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge" alt="MIT License"></a>
-    <img src="https://img.shields.io/badge/browsers-Chrome%20%7C%20Edge%20%7C%20Firefox-5A5A5A?style=for-the-badge" alt="Chrome, Edge and Firefox">
-  </p>
+**Instagram Reels, hands-free.**
+
+When a Reel ends, the next one starts on its own.<br />
+Cook, stretch or sit back while the feed keeps flowing.
+
+<a href="https://chromewebstore.google.com/detail/reels-flow-auto-scroll-fo/mlmllpiifbmfnopepamjhbdedfjajgcl"><img src="https://img.shields.io/chrome-web-store/v/mlmllpiifbmfnopepamjhbdedfjajgcl?style=flat-square&logo=googlechrome&logoColor=white&label=Chrome%20Web%20Store&color=ff5a4a" alt="Chrome Web Store" /></a>
+<a href="https://addons.mozilla.org/firefox/addon/reels-flow/"><img src="https://img.shields.io/amo/v/reels-flow?style=flat-square&logo=firefoxbrowser&logoColor=white&label=Firefox%20Add-ons&color=ff8a3d" alt="Firefox Add-ons" /></a>
+<img src="https://img.shields.io/badge/data%20collected-none-2b2b33?style=flat-square" alt="Collects no data" />
+<a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-2b2b33?style=flat-square" alt="MIT License" /></a>
+
+[**Website**](https://reelsflow.cptdawn.dev) · [**Report a problem**](https://reelsflow.cptdawn.dev/report) · [**Changelog**](CHANGELOG.md)
+
+<br />
+
+<img src="store%20assets/chrome/marquee-1400x560.png" alt="Reels Flow's Popup open over the Instagram Reels feed, with Auto-Scroll switched on" width="100%" />
+
 </div>
 
-Reels Flow is a browser extension for Instagram's desktop Reels feed (instagram.com/reels/). When a Reel finishes, it moves on to the next one, so you can cook, work out or just sit back.
+<br />
 
-Reels Flow is an independent project. It is not made, endorsed or supported by Instagram or Meta.
+## Install
 
-Website: [reelsflow.cptdawn.dev](https://reelsflow.cptdawn.dev)
+| Browser | Get it |
+| --- | --- |
+| **Chrome**, **Edge**, Brave, Opera, Vivaldi and other Chromium browsers | [Chrome Web Store](https://chromewebstore.google.com/detail/reels-flow-auto-scroll-fo/mlmllpiifbmfnopepamjhbdedfjajgcl) |
+| **Firefox** 142 or later | [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/reels-flow/) |
 
-## Features
+Open [instagram.com/reels](https://www.instagram.com/reels/), switch on Auto-Scroll, and let it play. In Edge, allow extensions from other stores when it asks; Reels Flow isn't listed on Edge Add-ons ([why](docs/adr/0005-chrome-web-store-and-firefox-add-ons-only.md)).
 
-- **Auto-Scroll**: moves to the next Reel when the current one ends. It holds back while you're in charge: the Reel is paused, the comments or a menu are open, you're typing, or you just scrolled by hand.
-- **Reel Control**: an Auto-Scroll button beside each Reel, among Instagram's own buttons.
-- **Speed**: play every Reel at your Preferred Speed (0.5×–3×), switched on or off from the Popup or a Shortcut.
-- **Shortcuts**: single keys on the Reels feed, never while you type. Defaults: `A` Auto-Scroll, `S` Speed. Change them in the Popup. Instagram's own `↑` and `↓` move between Reels.
-- **One Popup for everything**: every setting lives in the toolbar Popup; there is no separate settings page.
-- **Reels watched**: the toolbar Popup counts the Reels you've seen this session.
-- **Session Limit and Break Nudge**: optionally set a limit in Reels or minutes; when you reach it, the Reel pauses and a calm notice asks if you'd like a break. Off unless you set it.
+## What it does
 
-## Browsers
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="store%20assets/chrome/screenshot-2.png" alt="The Auto button beside a Reel, among Instagram's own buttons" />
+      <h3>Auto-Scroll</h3>
+      Moves to the next Reel the moment one ends, and knows when to wait: while the Reel is paused, the comments or a menu are open, you're typing, or you just scrolled by hand. Switch it from the Auto button beside each Reel, the Popup, or <kbd>A</kbd>.
+    </td>
+    <td width="50%" valign="top">
+      <img src="store%20assets/chrome/screenshot-3.png" alt="A Reel playing at 1.75× with the Speed slider" />
+      <h3>Speed</h3>
+      Play every Reel at your own pace, anywhere from 0.5× to 3×. Flip it on in the Popup or press <kbd>S</kbd>.
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="store%20assets/chrome/screenshot-4.png" alt="The Break Nudge asking whether it's time for a break" />
+      <h3>Breaks, when you want them</h3>
+      Set an optional Session Limit in Reels or minutes. When you reach it, the Reel pauses and a calm note asks: keep watching, or call it a day?
+    </td>
+    <td width="50%" valign="top">
+      <img src="store%20assets/chrome/screenshot-5.png" alt="Reels Flow's privacy promises and keyboard shortcuts" />
+      <h3>Private by design</h3>
+      No account, no analytics, no tracking. One permission, one site, and every line of code is right here to read.
+    </td>
+  </tr>
+</table>
 
-- **Chrome, Edge, Brave, Opera, Vivaldi and other Chromium browsers**: install from the [Chrome Web Store](https://chromewebstore.google.com/detail/reels-flow-auto-scroll-fo/mlmllpiifbmfnopepamjhbdedfjajgcl). In Edge, allow extensions from other stores when it asks.
-- **Firefox 142 or later**: install from Firefox Add-ons (addons.mozilla.org).
-
-Reels Flow is not listed on Microsoft Edge Add-ons; Edge runs the Chrome Web Store version. See [ADR 0005](docs/adr/0005-chrome-web-store-and-firefox-add-ons-only.md).
+A few small comforts, too: every setting lives in the toolbar Popup, it counts the Reels you've watched this session, and your Shortcuts are single keys you can change, which never fire while you're typing. Instagram's own <kbd>↑</kbd> and <kbd>↓</kbd> keep working as always.
 
 ## Privacy
 
-Reels Flow collects nothing and sends nothing to anyone: no analytics, no error reports, no usage counts. Your settings are kept in your browser's synced extension storage, so when browser sync is on, your browser carries them to your other browsers through your own browser account (your Google or Mozilla account); Reels Flow never sees them. The Reels watched count and the Popup's notes (What's new, the First-run Tip) stay on this device. It asks only for the `storage` permission and access to www.instagram.com. See [ADR 0003](docs/adr/0003-zero-telemetry.md).
+Reels Flow collects nothing and sends nothing to anyone: no analytics, no error reports, no usage counts.
 
-Found a problem? Use **Report a problem** in the Popup, or visit [reelsflow.cptdawn.dev/report](https://reelsflow.cptdawn.dev/report).
+Your settings live in your browser's synced extension storage, so when browser sync is on, your own Google or Mozilla account carries them to your other browsers; Reels Flow never sees them. The Reels watched count and the Popup's notes stay on this device. It asks only for the `storage` permission and access to www.instagram.com. The reasoning is in [ADR 0003](docs/adr/0003-zero-telemetry.md), and the full policy is at [reelsflow.cptdawn.dev/privacy](https://reelsflow.cptdawn.dev/privacy).
 
 ## Building from source
 
-Needs Bun (and Node.js, which WXT and Vitest run on).
+You'll need [Bun](https://bun.sh), plus Node.js, which WXT and Vitest run on.
 
 ```sh
 bun install
+bun run dev            # development build in Chrome (or: bun run dev:firefox)
 bun run typecheck
-bun run test
-bun run zip   # Chrome and Firefox packages, plus the Firefox source bundle, in .output/
+bun run test           # real headless Chromium and Firefox
+bun run zip            # store packages and the Firefox source bundle, in .output/
 ```
 
-`bun run dev` (Chrome) and `bun run dev:firefox` run a development build. CI runs the same checks (typecheck, the tests in Chromium and Firefox, and `web-ext lint`) on every push to `main` and every pull request. Before a release, run the [release checklist](docs/release/checklist.md).
+CI runs the same checks, plus `web-ext lint`, on every push and pull request. Fixes, translations and better tests are all welcome; [CONTRIBUTING.md](CONTRIBUTING.md) has the details, and [issue #18](https://github.com/CPT-Dawn/Reels-Flow/issues/18) is a good place to start.
 
-## Changelog
+<br />
 
-What changed in each version: [CHANGELOG.md](CHANGELOG.md).
-
-## License
-
-[MIT](LICENSE)
+<div align="center">
+<sub>
+Reels Flow is an independent project, not made, endorsed or supported by Instagram or Meta.<br />
+<a href="LICENSE">MIT License</a> · Made by <a href="https://github.com/CPT-Dawn">CPT Dawn</a>
+</sub>
+</div>
