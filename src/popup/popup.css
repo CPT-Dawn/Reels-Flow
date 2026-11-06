@@ -1128,8 +1128,7 @@ input {
 .rf-footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  justify-content: center;
   padding: 2px 6px 12px;
   font-size: 12.5px;
 }
@@ -1144,38 +1143,6 @@ input {
 
 .rf-footer a:hover {
   color: var(--rf-ink);
-}
-
-.rf-support {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.rf-heart {
-  display: inline-block;
-  color: var(--rf-glow-flat);
-  transition: transform 0.3s var(--rf-spring);
-}
-
-.rf-support:hover .rf-heart {
-  animation: rf-beat 0.9s ease-in-out infinite;
-}
-
-@keyframes rf-beat {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  25% {
-    transform: scale(1.25);
-  }
-  45% {
-    transform: scale(1);
-  }
-  60% {
-    transform: scale(1.15);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
